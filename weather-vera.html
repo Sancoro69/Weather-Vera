@@ -553,13 +553,11 @@ async function fetchAISummary(data, city) {
 Datos: ${Math.round(c.temperature_2m)}°C actual, sensación ${Math.round(c.apparent_temperature)}°C, ${wmoText(c.weather_code)}, viento ${windDir} ${windNow}km/h, máx ${Math.round(d.temperature_2m_max[0])}°/mín ${Math.round(d.temperature_2m_min[0])}°.`;
 
   try {
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch('https://eltiempo.jose-853.workers.dev',{
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'x-api-key':key,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
+        'x-api-key':key
       },
       body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:300,messages:[{role:'user',content:prompt}]})
     });

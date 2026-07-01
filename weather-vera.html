@@ -562,7 +562,26 @@ Datos: ${Math.round(c.temperature_2m)}°C actual, sensación ${Math.round(c.appa
       body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:300,messages:[{role:'user',content:prompt}]})
     });
     const json=await resp.json();
-    const raw=json.content?.[0]?.text||'{}';
+
+    if (json.error) {
+      el.textContent='Error API: '+(json.error.message||JSON.stringify(json.error));
+      el.classList.remove('loading');
+      return;
+    }
+
+    let raw = json.content?.[0]?.text || '';
+    if (!raw) {
+      el.textContent='Respuesta vacía del servidor. ('+JSON.stringify(json).slice(0,150)+')';
+      el.classList.remove('loading');
+      return;
+    }
+
+    // Limpiar posible envoltorio markdown ```json ... ```
+    raw = raw.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'');
+    // Extraer solo el bloque {...} por si hay texto alrededor
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (match) raw = match[0];
+
     let parsed;
     try { parsed=JSON.parse(raw); } catch { parsed=null; }
 
@@ -574,11 +593,11 @@ Datos: ${Math.round(c.temperature_2m)}°C actual, sensación ${Math.round(c.appa
       document.getElementById('clothes-evening').textContent=parsed.noche||'—';
       document.getElementById('clothes-block').style.display='flex';
     } else {
-      el.textContent=raw;
+      el.textContent=raw.slice(0,300);
       el.classList.remove('loading');
     }
   } catch(e) {
-    el.textContent='Error al conectar con Claude.';
+    el.textContent='Error de conexión: '+e.message;
     el.classList.remove('loading');
   }
 }

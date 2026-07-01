@@ -75,9 +75,9 @@ body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
 .ai-dot { width:5px; height:5px; border-radius:50%; background:currentColor; opacity:0.45; }
 
 /* OUTFIT HORARIO */
-.outfit-scroll { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; margin:0 -4px; padding:0 4px 2px; }
+.outfit-scroll { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; margin:0 -4px; padding:0 4px 2px; align-items:stretch; }
 .outfit-scroll::-webkit-scrollbar { display:none; }
-.outfit-item { display:flex; flex-direction:column; align-items:center; gap:4px; width:58px; min-width:58px; max-width:58px; padding:8px 0; border-radius:10px; flex-shrink:0; overflow:hidden; }
+.outfit-item { display:flex; flex-direction:column; align-items:center; gap:4px; width:58px; min-width:58px; max-width:58px; padding:8px 0; border-radius:10px; flex-shrink:0; overflow:hidden; box-sizing:border-box; }
 .outfit-item.current { background:var(--accent-color,rgba(255,140,66,0.18)); border-radius:10px; }
 .outfit-time { font-size:11px; color:var(--text-tertiary); font-weight:500; }
 .outfit-temp { font-size:13px; font-weight:300; color:var(--text-primary); }
@@ -95,7 +95,7 @@ body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
 /* HORAS */
 .hourly-scroll { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; margin:0 -4px; padding:0 4px 2px; }
 .hourly-scroll::-webkit-scrollbar { display:none; }
-.hourly-item { display:flex; flex-direction:column; align-items:center; gap:5px; width:58px; min-width:58px; max-width:58px; padding:10px 0; border-radius:12px; flex-shrink:0; }
+.hourly-item { display:flex; flex-direction:column; align-items:center; gap:5px; width:58px; min-width:58px; max-width:58px; padding:10px 0; border-radius:12px; flex-shrink:0; box-sizing:border-box; }
 .hourly-item.current { background:var(--accent-color,rgba(255,140,66,0.18)); border-radius:10px; }
 .hourly-time { font-size:11px; color:var(--text-tertiary); font-weight:500; }
 .hourly-temp { font-size:15px; font-weight:300; color:var(--text-primary); }
@@ -1116,7 +1116,7 @@ function renderWeather(data, city) {
     const iconSmall = clothesH.icon.replace('width="110"','width="28"').replace('height="110"','height="28"');
     div.innerHTML = `
       <div class="outfit-time">${i===0?'Ahora':h+'h'}</div>
-      ${iconSmall}
+      <div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">${iconSmall}</div>
       <div class="outfit-temp">${Math.round(apparentH)}°</div>`;
     outfitEl.appendChild(div);
   }

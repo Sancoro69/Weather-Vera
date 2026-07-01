@@ -70,7 +70,7 @@ body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
 .ai-summary.loading { color:var(--text-tertiary); font-style:italic; }
 .clothes-block { border-top:none; padding-top:8px; display:flex; flex-direction:column; align-items:center; gap:8px; }
 .clothes-icon-wrap { display:flex; align-items:center; justify-content:center; width:110px; height:110px; }
-.clothes-label { font-size:13px; font-weight:400; color:var(--text-secondary); letter-spacing:0.03em; text-transform:uppercase; }
+.clothes-label { font-size:11px; font-weight:500; color:var(--text-secondary); letter-spacing:0.08em; text-transform:uppercase; }
 .ai-badge { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-tertiary); margin-top:12px; }
 .ai-dot { width:5px; height:5px; border-radius:50%; background:currentColor; opacity:0.45; }
 
@@ -958,7 +958,7 @@ async function fetchWeather(lat,lon) {
 // ROPA SEGÚN TEMPERATURA APARENTE
 // ═══════════════════════════════════════════
 function getClothes(apparentTemp) {
-  if (apparentTemp >= 23) return { icon: CLOTHES.camiseta, label: 'Camiseta manga corta' };
+  if (apparentTemp >= 23) return { icon: CLOTHES.camiseta, label: 'Camiseta' };
   if (apparentTemp >= 17) return { icon: CLOTHES.jersey,   label: 'Jersey fino' };
   if (apparentTemp >= 14) return { icon: CLOTHES.sudadera,  label: 'Sudadera' };
   if (apparentTemp >= 5)  return { icon: CLOTHES.chaqueta,  label: 'Chaqueta' };
@@ -1104,7 +1104,7 @@ function renderWeather(data, city) {
   // Outfit horario: próximas 8h
   const outfitEl = document.getElementById('outfit-scroll');
   outfitEl.innerHTML = '';
-  for (let i=0; i<8; i++) {
+  for (let i=0; i<6; i++) {
     const idx = nowHour + i;
     if (idx >= hourly.temperature_2m.length) break;
     const h = idx % 24;

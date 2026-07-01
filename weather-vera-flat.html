@@ -62,17 +62,25 @@ body.is-night #stars-canvas { opacity:1; }
 /* CARDS */
 .card { background:transparent; border:none; border-top:1px solid rgba(0,0,0,0.08); border-radius:0; padding:20px 0; backdrop-filter:none; -webkit-backdrop-filter:none; margin-bottom:0; }
 body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
-.card-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:16px; }
+.card-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-primary); margin-bottom:16px; text-align:center; opacity:0.75; }
 
 /* RESUMEN IA + ROPA */
 .ai-block { display:flex; flex-direction:column; gap:14px; }
-.ai-summary { font-size:14px; font-weight:300; line-height:1.65; color:var(--text-secondary); }
+.ai-summary { font-size:14px; font-weight:300; line-height:1.65; color:var(--text-secondary); text-align:center; }
 .ai-summary.loading { color:var(--text-tertiary); font-style:italic; }
 .clothes-block { border-top:none; padding-top:8px; display:flex; flex-direction:column; align-items:center; gap:8px; }
 .clothes-icon-wrap { display:flex; align-items:center; justify-content:center; width:110px; height:110px; }
 .clothes-label { font-size:13px; font-weight:400; color:var(--text-secondary); letter-spacing:0.03em; text-transform:uppercase; }
 .ai-badge { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-tertiary); margin-top:12px; }
 .ai-dot { width:5px; height:5px; border-radius:50%; background:currentColor; opacity:0.45; }
+
+/* OUTFIT HORARIO */
+.outfit-scroll { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; margin:0 -4px; padding:0 4px 2px; }
+.outfit-scroll::-webkit-scrollbar { display:none; }
+.outfit-item { display:flex; flex-direction:column; align-items:center; gap:4px; min-width:52px; padding:8px 4px; border-radius:10px; flex-shrink:0; }
+.outfit-item.current { background:var(--accent-color,rgba(255,140,66,0.18)); border-radius:10px; }
+.outfit-time { font-size:11px; color:var(--text-tertiary); font-weight:500; }
+.outfit-temp { font-size:13px; font-weight:300; color:var(--text-primary); }
 
 /* VIENTO — centrado */
 .wind-center { display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px; }
@@ -88,7 +96,7 @@ body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
 .hourly-scroll { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; margin:0 -4px; padding:0 4px 2px; }
 .hourly-scroll::-webkit-scrollbar { display:none; }
 .hourly-item { display:flex; flex-direction:column; align-items:center; gap:5px; min-width:58px; padding:10px 6px; border-radius:12px; flex-shrink:0; }
-.hourly-item.current { background:rgba(0,0,0,0.04); border-radius:10px; }
+.hourly-item.current { background:var(--accent-color,rgba(255,140,66,0.18)); border-radius:10px; }
 .hourly-time { font-size:11px; color:var(--text-tertiary); font-weight:500; }
 .hourly-temp { font-size:15px; font-weight:300; color:var(--text-primary); }
 .hourly-wind-row { display:flex; align-items:center; gap:3px; }
@@ -173,10 +181,6 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
     <div class="card-label">Resumen del día</div>
     <div class="ai-block">
       <div class="ai-summary loading" id="ai-summary">Generando resumen…</div>
-      <div class="clothes-block" id="clothes-block" style="display:none">
-        <div class="clothes-icon-wrap" id="clothes-icon-wrap"></div>
-        <div class="clothes-label" id="clothes-label">—</div>
-      </div>
     </div>
     <div class="ai-badge"><span class="ai-dot"></span>Claude · Haiku</div>
   </div>
@@ -220,6 +224,16 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
         </svg>
       </div>
       <div class="wind-effect-text" id="wind-effect">—</div>
+    </div>
+  </div>
+
+  <!-- SUGERENCIA OUTFIT -->
+  <div class="card">
+    <div class="card-label">Sugerencia Outfit</div>
+    <div class="clothes-block" id="clothes-block" style="display:none">
+      <div class="clothes-icon-wrap" id="clothes-icon-wrap"></div>
+      <div class="clothes-label" id="clothes-label">—</div>
+      <div class="outfit-scroll" id="outfit-scroll"></div>
     </div>
   </div>
 
@@ -896,18 +910,23 @@ function applyTheme(temp, isNight) {
     if (temp < 12) {
       b.style.setProperty('--bg-c1','#5B8DB8');
       b.style.setProperty('--bg-c2','#9BB5CA');
+      b.style.setProperty('--accent-color','rgba(91,141,184,0.22)');
     } else if (temp < 18) {
       b.style.setProperty('--bg-c1','#74B3CE');
       b.style.setProperty('--bg-c2','#A0B4D6');
+      b.style.setProperty('--accent-color','rgba(116,179,206,0.22)');
     } else if (temp < 24) {
       b.style.setProperty('--bg-c1','#7EC8A4');
       b.style.setProperty('--bg-c2','#A8D8EA');
+      b.style.setProperty('--accent-color','rgba(126,200,164,0.22)');
     } else if (temp < 30) {
       b.style.setProperty('--bg-c1','#FFB347');
       b.style.setProperty('--bg-c2','#FFD9A0');
+      b.style.setProperty('--accent-color','rgba(255,179,71,0.25)');
     } else {
       b.style.setProperty('--bg-c1','#FF8C42');
       b.style.setProperty('--bg-c2','#FFD166');
+      b.style.setProperty('--accent-color','rgba(255,140,66,0.28)');
     }
   }
 }
@@ -1005,11 +1024,7 @@ Datos: ${Math.round(c.temperature_2m)}°C actual, sensación ${Math.round(c.appa
     if (parsed && parsed.resumen) {
       el.textContent=parsed.resumen;
       el.classList.remove('loading');
-      // Ropa: basada en temperatura aparente actual
-      const clothes = getClothes(c.apparent_temperature);
-      document.getElementById('clothes-icon-wrap').innerHTML = clothes.icon;
-      document.getElementById('clothes-label').textContent = clothes.label;
-      document.getElementById('clothes-block').style.display='flex';
+
     } else {
       el.textContent=raw.slice(0,300);
       el.classList.remove('loading');
@@ -1080,6 +1095,32 @@ function renderWeather(data, city) {
       <div class="daily-temps"><span class="daily-max">${Math.round(daily.temperature_2m_max[i])}°</span><span class="daily-min">${Math.round(daily.temperature_2m_min[i])}°</span></div>`;
     dailyEl.appendChild(div);
   }
+
+  // Outfit actual
+  const clothes = getClothes(c.apparent_temperature);
+  document.getElementById('clothes-icon-wrap').innerHTML = clothes.icon;
+  document.getElementById('clothes-label').textContent = clothes.label;
+
+  // Outfit horario: próximas 8h
+  const outfitEl = document.getElementById('outfit-scroll');
+  outfitEl.innerHTML = '';
+  for (let i=0; i<8; i++) {
+    const idx = nowHour + i;
+    if (idx >= hourly.temperature_2m.length) break;
+    const h = idx % 24;
+    const apparentH = hourly.apparent_temperature[idx];
+    const clothesH = getClothes(apparentH);
+    const div = document.createElement('div');
+    div.className = 'outfit-item' + (i===0?' current':'');
+    // Icono de ropa escalado a 32px
+    const iconSmall = clothesH.icon.replace('width="110"','width="36"').replace('height="110"','height="36"');
+    div.innerHTML = `
+      <div class="outfit-time">${i===0?'Ahora':h+'h'}</div>
+      ${iconSmall}
+      <div class="outfit-temp">${Math.round(apparentH)}°</div>`;
+    outfitEl.appendChild(div);
+  }
+  document.getElementById('clothes-block').style.display='flex';
 
   fetchAISummary(data, city);
   document.getElementById('loading').classList.add('hidden');

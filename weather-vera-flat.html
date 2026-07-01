@@ -1063,7 +1063,7 @@ function renderWeather(data, city) {
   const nowHour=new Date().getHours();
   const hourlyEl=document.getElementById('hourly-scroll');
   hourlyEl.innerHTML='';
-  for (let i=0;i<8;i++) {
+  for (let i=0;i<6;i++) {
     const idx=nowHour+i;
     if (idx>=hourly.temperature_2m.length) break;
     const h=idx%24, isD=h>=7&&h<=20;

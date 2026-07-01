@@ -75,9 +75,11 @@ body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
 .ai-dot { width:5px; height:5px; border-radius:50%; background:currentColor; opacity:0.45; }
 
 /* OUTFIT HORARIO */
-.outfit-scroll { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; margin:0 -4px; padding:0 4px 2px; align-items:stretch; }
-.outfit-scroll::-webkit-scrollbar { display:none; }
-.outfit-item { display:flex; flex-direction:column; align-items:center; gap:4px; width:58px; min-width:58px; max-width:58px; padding:8px 0; border-radius:10px; flex-shrink:0; overflow:hidden; box-sizing:border-box; }
+.combined-scroll { overflow-x:auto; scrollbar-width:none; margin:0 -4px; padding:0 4px 4px; }
+.combined-scroll::-webkit-scrollbar { display:none; }
+.outfit-row, .hourly-row { display:flex; gap:4px; }
+.outfit-row { margin-bottom:4px; }
+.outfit-item { display:flex; flex-direction:column; align-items:center; gap:4px; width:62px; min-width:62px; max-width:62px; padding:8px 0; border-radius:10px; flex-shrink:0; overflow:hidden; box-sizing:border-box; }
 .outfit-item.current { background:var(--accent-color,rgba(255,140,66,0.18)); border-radius:10px; }
 .outfit-time { font-size:11px; color:var(--text-tertiary); font-weight:500; }
 .outfit-temp { font-size:13px; font-weight:300; color:var(--text-primary); }
@@ -93,9 +95,9 @@ body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
 .wind-effect-text { font-size:12px; color:var(--text-tertiary); line-height:1.5; padding:6px 0; width:100%; text-align:center; }
 
 /* HORAS */
-.hourly-scroll { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; margin:0 -4px; padding:0 4px 2px; }
+.hourly-scroll { display:flex; gap:4px; scrollbar-width:none; }
 .hourly-scroll::-webkit-scrollbar { display:none; }
-.hourly-item { display:flex; flex-direction:column; align-items:center; gap:5px; width:58px; min-width:58px; max-width:58px; padding:10px 0; border-radius:12px; flex-shrink:0; box-sizing:border-box; }
+.hourly-item { display:flex; flex-direction:column; align-items:center; gap:4px; width:62px; min-width:62px; max-width:62px; padding:10px 0; border-radius:12px; flex-shrink:0; box-sizing:border-box; }
 .hourly-item.current { background:var(--accent-color,rgba(255,140,66,0.18)); border-radius:10px; }
 .hourly-time { font-size:11px; color:var(--text-tertiary); font-weight:500; }
 .hourly-temp { font-size:15px; font-weight:300; color:var(--text-primary); }
@@ -233,14 +235,17 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
     <div class="clothes-block" id="clothes-block" style="display:none">
       <div class="clothes-icon-wrap" id="clothes-icon-wrap"></div>
       <div class="clothes-label" id="clothes-label">—</div>
-      <div class="outfit-scroll" id="outfit-scroll"></div>
+
     </div>
   </div>
 
-  <!-- PRÓXIMAS HORAS -->
+  <!-- PRÓXIMAS HORAS + OUTFIT COMBINADOS -->
   <div class="card">
     <div class="card-label">Próximas horas</div>
-    <div class="hourly-scroll" id="hourly-scroll"></div>
+    <div class="combined-scroll" id="combined-scroll">
+      <div class="outfit-row" id="outfit-scroll"></div>
+      <div class="hourly-row" id="hourly-scroll"></div>
+    </div>
   </div>
 
   <!-- SEMANAL -->

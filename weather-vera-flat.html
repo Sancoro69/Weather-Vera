@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tiempo">
+<title>Tiempo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg-c1:#FF8C42; --bg-c2:#FFD166; --bg-white:#FAFAF8;
+  --text-primary:#1a1a2e; --text-secondary:rgba(26,26,46,0.55);
+  --text-tertiary:rgba(26,26,46,0.32); --card-bg:rgba(255,255,255,0.48);
+  --card-border:rgba(255,255,255,0.72); --stroke:rgba(26,26,46,0.75);
+}
+body {
+  font-family:'Inter',-apple-system,sans-serif;
+  min-height:100vh; min-height:-webkit-fill-available;
+  overflow-x:hidden;
+  background:
+    radial-gradient(ellipse 120% 55% at 30% -5%, var(--bg-c1) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 45% at 85% 5%, var(--bg-c2) 0%, transparent 65%),
+    var(--bg-white);
+  transition:background 1.4s ease; color:var(--text-primary);
+}
+body.is-night {
+  --text-primary:rgba(235,242,255,0.95); --text-secondary:rgba(235,242,255,0.52);
+  --text-tertiary:rgba(235,242,255,0.28); --stroke:rgba(235,242,255,0.8);
+  background: radial-gradient(ellipse 120% 55% at 30% -5%, var(--bg-c1) 0%, transparent 70%), radial-gradient(ellipse 80% 45% at 85% 5%, var(--bg-c2) 0%, transparent 65%), var(--bg-white);
+}
+#stars-canvas { position:fixed; inset:0; pointer-events:none; opacity:0; transition:opacity 1.8s ease; z-index:0; }
+body.is-night #stars-canvas { opacity:1; }
+
+.app {
+  position:relative; z-index:1; max-width:430px; margin:0 auto;
+  min-height:100vh; padding:env(safe-area-inset-top,44px) 24px env(safe-area-inset-bottom,34px);
+  display:flex; flex-direction:column;
+}
+
+/* HEADER */
+.header { display:flex; justify-content:space-between; align-items:center; padding:16px 0 0; margin-bottom:4px; }
+.location { display:flex; align-items:center; gap:6px; }
+.loc-icon { width:13px; height:13px; opacity:0.4; }
+.location-name { font-size:12px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-secondary); }
+.last-updated { font-size:11px; color:var(--text-tertiary); }
+
+/* HERO */
+.hero { display:flex; flex-direction:column; align-items:center; text-align:center; padding:32px 0 26px; }
+.temp-row { display:flex; align-items:flex-start; line-height:1; }
+.temp-value { font-size:clamp(100px,27vw,124px); font-weight:100; letter-spacing:-0.04em; color:var(--text-primary); line-height:0.88; }
+.temp-unit { font-size:clamp(34px,9vw,46px); font-weight:200; color:var(--text-primary); margin-top:12px; margin-left:3px; opacity:0.55; }
+.condition-row { margin-top:16px; display:flex; align-items:center; justify-content:center; gap:10px; }
+.condition-text { font-size:20px; font-weight:200; color:var(--text-secondary); letter-spacing:-0.01em; }
+.feels-row { margin-top:9px; font-size:13px; color:var(--text-tertiary); }
+.feels-row span { color:var(--text-secondary); font-weight:500; }
+.minmax-row { margin-top:5px; font-size:13px; color:var(--text-tertiary); display:flex; gap:14px; justify-content:center; }
+.minmax-row b { font-weight:500; color:var(--text-secondary); }
+
+/* CARDS */
+.card { background:transparent; border:none; border-top:1px solid rgba(0,0,0,0.08); border-radius:0; padding:20px 0; backdrop-filter:none; -webkit-backdrop-filter:none; margin-bottom:0; }
+body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
+.card-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:16px; }
+
+/* RESUMEN IA + ROPA */
+.ai-block { display:flex; flex-direction:column; gap:14px; }
+.ai-summary { font-size:14px; font-weight:300; line-height:1.65; color:var(--text-secondary); }
+.ai-summary.loading { color:var(--text-tertiary); font-style:italic; }
+.clothes-block { border-top:none; padding-top:8px; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.clothes-icon-wrap { display:flex; align-items:center; justify-content:center; width:110px; height:110px; }
+.clothes-label { font-size:13px; font-weight:400; color:var(--text-secondary); letter-spacing:0.03em; text-transform:uppercase; }
+.ai-badge { display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-tertiary); margin-top:12px; }
+.ai-dot { width:5px; height:5px; border-radius:50%; background:currentColor; opacity:0.45; }
+
+/* VIENTO — centrado */
+.wind-center { display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px; }
+.wind-top { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.wind-direction-label { font-size:13px; font-weight:500; letter-spacing:0.05em; color:var(--text-secondary); min-height:18px; }
+.wind-speed-big { font-size:56px; font-weight:100; letter-spacing:-0.03em; line-height:1; color:var(--text-primary); }
+.wind-unit { font-size:12px; color:var(--text-tertiary); margin-top:2px; }
+.compass-wrap { position:relative; width:90px; height:90px; }
+.compass-wrap svg { width:100%; height:100%; }
+.wind-effect-text { font-size:12px; color:var(--text-tertiary); line-height:1.5; padding:6px 0; width:100%; text-align:center; }
+
+/* HORAS */
+.hourly-scroll { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; margin:0 -4px; padding:0 4px 2px; }
+.hourly-scroll::-webkit-scrollbar { display:none; }
+.hourly-item { display:flex; flex-direction:column; align-items:center; gap:5px; min-width:58px; padding:10px 6px; border-radius:12px; flex-shrink:0; }
+.hourly-item.current { background:rgba(0,0,0,0.04); border-radius:10px; }
+.hourly-time { font-size:11px; color:var(--text-tertiary); font-weight:500; }
+.hourly-temp { font-size:15px; font-weight:300; color:var(--text-primary); }
+.hourly-wind-row { display:flex; align-items:center; gap:3px; }
+.hourly-wind-spd { font-size:10px; color:var(--text-tertiary); }
+
+/* SEMANAL */
+.daily-item { display:flex; align-items:center; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.06); }
+body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
+.daily-item:last-child { border-bottom:none; }
+.daily-day { font-size:14px; font-weight:400; color:var(--text-secondary); width:40px; flex-shrink:0; }
+.daily-day.today { font-weight:600; color:var(--text-primary); }
+.daily-icon-wrap { flex:1; display:flex; justify-content:center; }
+.daily-temps { display:flex; gap:8px; font-size:14px; font-weight:300; }
+.daily-max { color:var(--text-primary); font-weight:500; }
+.daily-min { color:var(--text-tertiary); }
+
+/* LOADING */
+.loading-screen { position:fixed; inset:0; background:linear-gradient(160deg,#EEF2F7 0%,#C8D8E8 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; z-index:100; transition:opacity 0.6s ease; }
+.loading-screen.hidden { opacity:0; pointer-events:none; }
+.loading-city { font-size:12px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; color:rgba(26,26,46,0.38); }
+.loading-spinner { width:28px; height:28px; border:1.5px solid rgba(26,26,46,0.1); border-top-color:rgba(26,26,46,0.38); border-radius:50%; animation:spin 0.9s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* API KEY */
+.api-key-screen { position:fixed; inset:0; background:linear-gradient(160deg,#EEF2F7 0%,#C8D8E8 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; z-index:200; padding:32px; }
+.api-key-screen h2 { font-size:20px; font-weight:300; color:rgba(26,26,46,0.8); text-align:center; }
+.api-key-screen p { font-size:13px; color:rgba(26,26,46,0.45); text-align:center; line-height:1.6; max-width:280px; }
+.api-key-input { width:100%; max-width:340px; padding:14px 18px; border:1px solid rgba(26,26,46,0.15); border-radius:14px; font-family:'Inter',sans-serif; font-size:13px; background:rgba(255,255,255,0.7); color:rgba(26,26,46,0.8); outline:none; text-align:center; }
+.api-key-input:focus { border-color:rgba(26,26,46,0.3); }
+.api-key-btn { padding:14px 32px; background:rgba(26,26,46,0.85); color:white; border:none; border-radius:14px; font-family:'Inter',sans-serif; font-size:14px; font-weight:500; cursor:pointer; }
+.api-key-skip { font-size:12px; color:rgba(26,26,46,0.35); cursor:pointer; text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+
+<div class="api-key-screen" id="api-key-screen" style="display:none">
+  <h2>API key de Anthropic</h2>
+  <p>Para el resumen del día y consejo de ropa. Se guarda solo en tu dispositivo.</p>
+  <input class="api-key-input" id="api-key-input" type="password" placeholder="sk-ant-...">
+  <button class="api-key-btn" onclick="saveApiKey()">Guardar y continuar</button>
+  <span class="api-key-skip" onclick="skipApiKey()">Continuar sin IA</span>
+</div>
+
+<div class="loading-screen" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-city" id="loading-city">Obteniendo ubicación…</div>
+</div>
+
+<div class="app" id="app" style="display:none">
+
+  <div class="header">
+    <div class="location">
+      <svg class="loc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+      </svg>
+      <span class="location-name" id="location-name">—</span>
+    </div>
+    <span class="last-updated" id="last-updated"></span>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="temp-row">
+      <span class="temp-value" id="temp-value">—</span>
+      <span class="temp-unit">°C</span>
+    </div>
+    <div class="condition-row">
+      <span id="condition-icon-svg"></span>
+      <span class="condition-text" id="condition-text">—</span>
+    </div>
+    <div class="feels-row">Sensación <span id="feels-like">—</span>°C</div>
+    <div class="minmax-row">
+      <span>↑ <b id="temp-max">—</b>°</span>
+      <span>↓ <b id="temp-min">—</b>°</span>
+    </div>
+  </div>
+
+  <!-- RESUMEN IA + ROPA -->
+  <div class="card">
+    <div class="card-label">Resumen del día</div>
+    <div class="ai-block">
+      <div class="ai-summary loading" id="ai-summary">Generando resumen…</div>
+      <div class="clothes-block" id="clothes-block" style="display:none">
+        <div class="clothes-icon-wrap" id="clothes-icon-wrap"></div>
+        <div class="clothes-label" id="clothes-label">—</div>
+      </div>
+    </div>
+    <div class="ai-badge"><span class="ai-dot"></span>Claude · Haiku</div>
+  </div>
+
+  <!-- VIENTO -->
+  <div class="card">
+    <div class="card-label">Viento</div>
+    <div class="wind-center">
+      <div class="wind-top">
+        <div class="wind-direction-label" id="wind-dir-label">—</div>
+        <div class="wind-speed-big" id="wind-speed">—</div>
+        <div class="wind-unit">km/h</div>
+      </div>
+      <div class="compass-wrap">
+        <svg viewBox="0 0 90 90" id="compass-svg">
+          <circle cx="45" cy="45" r="41" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.12"/>
+          <!-- marcas de grados cada 30° -->
+          <g opacity="0.15" stroke="currentColor" stroke-width="0.8">
+            <line x1="45" y1="5" x2="45" y2="11"/>
+            <line x1="45" y1="79" x2="45" y2="85"/>
+            <line x1="5" y1="45" x2="11" y2="45"/>
+            <line x1="79" y1="45" x2="85" y2="45"/>
+            <line x1="16.5" y1="16.5" x2="20.7" y2="20.7"/>
+            <line x1="69.3" y1="69.3" x2="73.5" y2="73.5"/>
+            <line x1="73.5" y1="16.5" x2="69.3" y2="20.7"/>
+            <line x1="20.7" y1="69.3" x2="16.5" y2="73.5"/>
+          </g>
+          <text x="45" y="13" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">N</text>
+          <text x="45" y="83" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">S</text>
+          <text x="8"  y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">O</text>
+          <text x="82" y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">E</text>
+          <!-- aguja animada -->
+          <g id="compass-needle" transform="rotate(0 45 45)">
+            <!-- norte: punta oscura -->
+            <polygon points="45,18 48,45 45,52 42,45" fill="currentColor" opacity="0.88"/>
+            <!-- sur: cola clara -->
+            <polygon points="45,72 48,45 45,52 42,45" fill="currentColor" opacity="0.18"/>
+            <!-- punto central -->
+            <circle cx="45" cy="45" r="2.5" fill="currentColor" opacity="0.3"/>
+          </g>
+        </svg>
+      </div>
+      <div class="wind-effect-text" id="wind-effect">—</div>
+    </div>
+  </div>
+
+  <!-- PRÓXIMAS HORAS -->
+  <div class="card">
+    <div class="card-label">Próximas horas</div>
+    <div class="hourly-scroll" id="hourly-scroll"></div>
+  </div>
+
+  <!-- SEMANAL -->
+  <div class="card">
+    <div class="card-label">Esta semana</div>
+    <div id="daily-list"></div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// ICONOS SVG — estilo línea fina tipo Weat
+// ═══════════════════════════════════════════
+const ICONS = {
+  sun: `<svg width="28" height="28" viewBox="72.7 72.7 137.6 137.6" fill="currentColor"><g>
+    <path d="M141.7,170.5c-16.1,0-29.2-13.1-29.2-29.2s13.1-29.2,29.2-29.2,29.2,13.1,29.2,29.2-13.1,29.2-29.2,29.2ZM141.7,117.1c-13.3,0-24.2,10.8-24.2,24.2s10.8,24.2,24.2,24.2,24.2-10.8,24.2-24.2-10.8-24.2-24.2-24.2Z"/>
+    <path d="M141.7,104c-1.4,0-2.5-1.1-2.5-2.5v-12.8c0-1.4,1.1-2.5,2.5-2.5s2.5,1.1,2.5,2.5v12.8c0,1.4-1.1,2.5-2.5,2.5Z"/>
+    <path d="M113.6,115.6c-.6,0-1.3-.2-1.8-.7l-9.1-9.1c-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8c1-1,2.6-1,3.5,0l9.1,9.1c.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8c-.5.5-1.1.7-1.8.7Z"/>
+    <path d="M101.9,143.8h-12.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h12.8c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+    <path d="M104.5,181c-.6,0-1.3-.2-1.8-.7-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8l9.1-9.1c1-1,2.6-1,3.5,0,.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8l-4.5,4.5h0l-4.5,4.5c-.5.5-1.1.7-1.8.7Z"/>
+    <path d="M141.7,196.5c-1.4,0-2.5-1.1-2.5-2.5v-12.8c0-1.4,1.1-2.5,2.5-2.5s2.5,1.1,2.5,2.5v12.8c0,1.4-1.1,2.5-2.5,2.5Z"/>
+    <path d="M179,181c-.6,0-1.3-.2-1.8-.7l-9.1-9.1c-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8c1-1,2.6-1,3.5,0l9.1,9.1c.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8c-.5.5-1.1.7-1.8.7Z"/>
+    <path d="M194.4,143.8h-12.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h12.8c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+    <path d="M169.9,115.6c-.6,0-1.3-.2-1.8-.7-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8l4.5-4.5h0l4.5-4.5c1-1,2.6-1,3.5,0,.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8l-9.1,9.1c-.5.5-1.1.7-1.8.7Z"/>
+  </g></svg>`,
+  moon: `<svg width="28" height="28" viewBox="394.1 80.1 105.8 122.8" fill="currentColor"><path d="M455.5,190.2c-27,0-48.9-22-48.9-48.9s22-48.9,48.9-48.9,5.1.2,7.7.6c1,.2,1.8.9,2,1.8s0,2-.8,2.6c-9.8,8.4-15.5,20.6-15.5,33.5,0,21.8,15.6,40,37,43.4,1,.2,1.8.9,2,1.8s0,2-.8,2.6c-8.8,7.5-20.1,11.7-31.7,11.7ZM455.5,97.4c-24.2,0-43.9,19.7-43.9,43.9s19.7,43.9,43.9,43.9,17.1-2.6,24.2-7.3c-21-5.8-35.8-24.8-35.8-47.2s4.7-24.4,13.2-33.4c-.5,0-1.1,0-1.6,0Z"/></svg>`,
+  cloudsun: `<svg width="28" height="28" viewBox="662.5 66.5 181.0 149.0" fill="currentColor"><g>
+    <path d="M767.8,198h-62.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9ZM723.9,127.5c-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8l.2,2.1-2,.5c-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9h62.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5l-1.5-.3-.4-1.5c-2-7.8-9.1-13.3-17.2-13.3s-4.3.4-6.4,1.2l-2,.8-1.1-1.9c-3.9-6.9-11.3-11.1-19.2-11.1Z"/>
+    <g>
+      <path d="M791.7,154.4c-.5,0-1.1-.2-1.5-.5-1.1-.9-1.3-2.4-.4-3.5,3-3.8,4.6-8.4,4.6-13.3,0-11.9-9.6-21.5-21.5-21.5s-15,4.2-18.8,11.1c-.7,1.2-2.2,1.6-3.4,1-1.2-.7-1.6-2.2-1-3.4,4.7-8.4,13.6-13.6,23.2-13.6,14.6,0,26.5,11.9,26.5,26.5s-1.9,11.6-5.6,16.3c-.5.6-1.2,1-2,1Z"/>
+      <path d="M772.8,100.7c-1.4,0-2.5-1.1-2.5-2.5v-11.1c0-1.4,1.1-2.5,2.5-2.5s2.5,1.1,2.5,2.5v11.1c0,1.4-1.1,2.5-2.5,2.5Z"/>
+      <path d="M745.3,112.1c-.6,0-1.3-.2-1.8-.7l-7.8-7.8c-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8c1-1,2.6-1,3.5,0l7.8,7.8c.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8c-.5.5-1.1.7-1.8.7Z"/>
+      <path d="M808.2,175c-.6,0-1.3-.2-1.8-.7l-7.8-7.8c-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8c1-1,2.6-1,3.5,0l7.8,7.8c.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8c-.5.5-1.1.7-1.8.7Z"/>
+      <path d="M822.8,139.6h-11.1c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h11.1c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+      <path d="M800.4,112.1c-.6,0-1.3-.2-1.8-.7-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8l7.8-7.8c1-1,2.6-1,3.5,0,.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8l-3.9,3.9h0l-3.9,3.9c-.5.5-1.1.7-1.8.7Z"/>
+    </g>
+  </g></svg>`,
+  cloudmoon: `<svg width="28" height="28" viewBox="972.2 74.2 173.6 134.6" fill="currentColor"><g>
+    <path d="M1076.6,191.1h-62.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9ZM1032.6,120.6c-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8l.2,2.1-2,.5c-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9h62.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5l-1.5-.3-.4-1.5c-2-7.8-9.1-13.3-17.2-13.3s-4.4.4-6.4,1.2l-2,.8-1.1-1.9c-3.9-6.9-11.3-11.1-19.2-11.1Z"/>
+    <path d="M1109.3,161.6c-1,0-2-.6-2.3-1.6-.5-1.3.2-2.7,1.5-3.2,4.4-1.6,8.3-4.2,11.5-7.6-15.5-.7-29-11.2-33.3-26.6-2.3-8.4-1.5-17.3,2.2-25.1-10.7,3.1-19,11.7-21.7,22.6-.3,1.3-1.7,2.2-3,1.8-1.3-.3-2.2-1.7-1.8-3,3.2-12.7,13-22.8,25.6-26.3,1.8-.5,3.7-.9,5.6-1.1,1-.1,1.9.4,2.4,1.2.5.8.5,1.9,0,2.7-5.2,7.6-6.7,17-4.3,25.8,4.1,14.9,18.2,24.5,33.6,22.8,1-.1,1.9.4,2.4,1.2.5.8.5,1.9,0,2.7-4.2,6.2-10.2,10.9-17.2,13.5-.3.1-.6.2-.9.2Z"/>
+  </g></svg>`,
+  cloud: `<svg width="28" height="28" viewBox="65.3 501.3 141.4 103.4" fill="currentColor"><path d="M167.3,591h-62.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9ZM123.3,520.5c-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8l.2,2.1-2,.5c-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9h62.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5l-1.5-.3-.4-1.5c-2-7.8-9.1-13.3-17.2-13.3s-4.3.4-6.4,1.2l-2,.8-1.1-1.9c-3.9-6.9-11.3-11.1-19.2-11.1Z"/></svg>`,
+  fog: `<svg width="28" height="28" viewBox="381.2 497.2 121.5 112.5" fill="currentColor"><g>
+    <path d="M474.6,528h-73c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h73c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+    <g>
+      <path d="M460.6,514.1h-64.4c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h64.4c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+      <path d="M487.6,514.1h-16.4c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h16.4c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+    </g>
+    <path d="M471.2,555.7h-49.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h49.8c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+    <path d="M456.1,569.6h-39.3c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h39.3c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+    <path d="M450,583.5h-22.4c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h22.4c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+    <path d="M451.5,597.4h-11.2c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h11.2c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+    <g>
+      <path d="M469,541.8h-38c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h38c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+      <path d="M422,542h-10.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h10.8c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+    </g>
+  </g></svg>`,
+  drizzle: `<svg width="28" height="28" viewBox="677.4 490.4 140.1 126.1" fill="currentColor"><g>
+    <path d="M779,580c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5c-.9-.2-1.7-.9-1.9-1.8-2-7.8-9.1-13.3-17.2-13.3s-4.4.4-6.4,1.2c-1.2.5-2.5,0-3.1-1.1-3.9-6.9-11.3-11.1-19.2-11.1-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8c0,1.2-.7,2.3-1.8,2.6-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9,2.5,1.1,2.5,2.5-1.1,2.5-2.5,2.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9Z"/>
+    <g>
+      <path d="M726.4,582.9c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
+      <path d="M745.9,582.9c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
+      <path d="M765.5,582.9c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
+    </g>
+    <g>
+      <path d="M715.5,602c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
+      <path d="M735,602c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
+      <path d="M754.5,602c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
+    </g>
+  </g></svg>`,
+  rain: `<svg width="28" height="28" viewBox="983.4 492.4 140.1 122.1" fill="currentColor"><g>
+    <path d="M1084.8,581.9c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5c-.9-.2-1.7-.9-1.9-1.8-2-7.8-9.1-13.3-17.2-13.3s-4.4.4-6.4,1.2c-1.2.4-2.5,0-3.1-1.1-3.9-6.9-11.3-11.1-19.2-11.1-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8c0,1.2-.7,2.3-1.8,2.6-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9,2.5,1.1,2.5,2.5-1.1,2.5-2.5,2.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9Z"/>
+    <g>
+      <path d="M1023.4,600.1c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l14.9-25.9c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-14.9,25.9c-.5.8-1.3,1.3-2.2,1.3Z"/>
+      <path d="M1042.9,600.1c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l14.9-25.9c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-14.9,25.9c-.5.8-1.3,1.3-2.2,1.3Z"/>
+      <path d="M1062.4,600.1c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l14.9-25.9c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-14.9,25.9c-.5.8-1.3,1.3-2.2,1.3Z"/>
+    </g>
+  </g></svg>`,
+  snow: `<svg width="28" height="28" viewBox="69.4 862.4 140.1 138.1" fill="currentColor"><g>
+    <path d="M170.8,952.1h-19.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h19.8c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5l-1.5-.3-.4-1.5c-2-7.8-9.1-13.3-17.2-13.3s-4.4.4-6.4,1.2l-2,.8-1.1-1.9c-3.9-6.9-11.3-11.1-19.2-11.1-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8l.2,2.1-2,.5c-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9h7.5c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5h-7.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9Z"/>
+    <path d="M133.3,958.9c-4.6,0-8.3-3.7-8.3-8.3s3.7-8.3,8.3-8.3,8.3,3.7,8.3,8.3-3.7,8.3-8.3,8.3ZM133.3,947.3c-1.8,0-3.3,1.5-3.3,3.3s1.5,3.3,3.3,3.3,3.3-1.5,3.3-3.3-1.5-3.3-3.3-3.3Z"/>
+    <path d="M164,973.7c-4.6,0-8.3-3.7-8.3-8.3s3.7-8.3,8.3-8.3,8.3,3.7,8.3,8.3-3.7,8.3-8.3,8.3ZM164,962.1c-1.8,0-3.3,1.5-3.3,3.3s1.5,3.3,3.3,3.3,3.3-1.5,3.3-3.3-1.5-3.3-3.3-3.3Z"/>
+    <path d="M114.2,974.7c-4.6,0-8.3-3.7-8.3-8.3s3.7-8.3,8.3-8.3,8.3,3.7,8.3,8.3-3.7,8.3-8.3,8.3ZM114.2,963.1c-1.8,0-3.3,1.5-3.3,3.3s1.5,3.3,3.3,3.3,3.3-1.5,3.3-3.3-1.5-3.3-3.3-3.3Z"/>
+    <path d="M141.1,986.2c-4.6,0-8.3-3.7-8.3-8.3s3.7-8.3,8.3-8.3,8.3,3.7,8.3,8.3-3.7,8.3-8.3,8.3ZM141.1,974.6c-1.8,0-3.3,1.5-3.3,3.3s1.5,3.3,3.3,3.3,3.3-1.5,3.3-3.3-1.5-3.3-3.3-3.3Z"/>
+  </g></svg>`,
+  storm: `<svg width="28" height="28" viewBox="376.3 865.3 141.4 131.4" fill="currentColor"><g>
+    <path d="M478.1,955.3c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5c-.9-.2-1.7-.9-1.9-1.8-2-7.8-9.1-13.3-17.2-13.3s-4.3.4-6.4,1.2c-1.2.5-2.5,0-3.1-1.1-3.9-6.9-11.3-11.1-19.2-11.1-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8c0,1.2-.7,2.3-1.8,2.6-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9,2.5,1.1,2.5,2.5-1.1,2.5-2.5,2.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9Z"/>
+    <path d="M438.6,983c-.3,0-.7,0-1-.2-1-.4-1.6-1.5-1.5-2.6l2.3-21.2h-9.4c-1,0-1.9-.6-2.3-1.4-.4-.9-.3-1.9.3-2.7l26.2-31.3c.7-.8,1.9-1.1,2.9-.7,1,.4,1.6,1.5,1.5,2.6l-2.3,21.2h9.4c1,0,1.9.6,2.3,1.4.4.9.3,1.9-.3,2.7l-26.2,31.3c-.5.6-1.2.9-1.9.9ZM434.3,954h6.8c.7,0,1.4.3,1.9.8.5.5.7,1.2.6,1.9l-1.7,15.7,17.5-20.9h-6.8c-.7,0-1.4-.3-1.9-.8-.5-.5-.7-1.2-.6-1.9l1.7-15.7-17.5,20.9Z"/>
+  </g></svg>`,
+  stormrain: `<svg width="28" height="28" viewBox="684.4 867.4 140.1 128.1" fill="currentColor"><g>
+    <path d="M785.5,956.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5c-.9-.2-1.7-.9-1.9-1.8-2-7.8-9.1-13.3-17.2-13.3s-4.4.4-6.4,1.2c-1.2.4-2.5,0-3.1-1.1-3.9-6.9-11.3-11.1-19.2-11.1-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8c0,1.2-.7,2.3-1.8,2.6-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9,2.5,1.1,2.5,2.5-1.1,2.5-2.5,2.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9Z"/>
+    <path d="M745.9,981.4c-.3,0-.7,0-1-.2-1-.4-1.6-1.5-1.5-2.6l2.3-21.2h-9.4c-1,0-1.9-.6-2.3-1.4-.4-.9-.3-1.9.3-2.7l26.2-31.3c.7-.8,1.9-1.1,2.9-.7,1,.4,1.6,1.5,1.5,2.6l-2.3,21.2h9.4c1,0,1.9.6,2.3,1.4.4.9.3,1.9-.3,2.7l-26.2,31.3c-.5.6-1.2.9-1.9.9ZM741.6,952.5h6.8c.7,0,1.4.3,1.9.8.5.5.7,1.2.6,1.9l-1.7,15.7,17.5-20.9h-6.8c-.7,0-1.4-.3-1.9-.8-.5-.5-.7-1.2-.6-1.9l1.7-15.7-17.5,20.9Z"/>
+    <g>
+      <path d="M725.7,976.1c-.5,0-1-.1-1.4-.4-1.2-.8-1.5-2.3-.7-3.5l7.3-11c.8-1.2,2.3-1.5,3.5-.7,1.2.8,1.5,2.3.7,3.5l-7.3,11c-.5.7-1.3,1.1-2.1,1.1Z"/>
+      <path d="M710.5,976.1c-.5,0-1-.1-1.4-.4-1.2-.8-1.5-2.3-.7-3.5l7.3-11c.8-1.2,2.3-1.5,3.5-.7,1.2.8,1.5,2.3.7,3.5l-7.3,11c-.5.7-1.3,1.1-2.1,1.1Z"/>
+      <path d="M768.9,976.1c-.5,0-1-.1-1.4-.4-1.2-.8-1.5-2.3-.7-3.5l7.3-11c.8-1.2,2.3-1.5,3.5-.7,1.2.8,1.5,2.3.7,3.5l-7.3,11c-.5.7-1.3,1.1-2.1,1.1Z"/>
+      <path d="M783.5,976.1c-.5,0-1-.1-1.4-.4-1.2-.8-1.5-2.3-.7-3.5l7.3-11c.8-1.2,2.3-1.5,3.5-.7,1.2.8,1.5,2.3.7,3.5l-7.3,11c-.5.7-1.3,1.1-2.1,1.1Z"/>
+    </g>
+  </g></svg>`,
+  wind: `<svg width="28" height="28" viewBox="993.8 876.8 136.4 109.4" fill="currentColor"><g>
+    <path d="M1061.7,917.4h-34.4c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h34.4c4.6,0,8.4-3.8,8.4-8.4s-3.8-8.4-8.4-8.4-4.7,1.1-6.3,2.9c-.9,1-2.5,1.2-3.5.2-1-.9-1.2-2.5-.2-3.5,2.5-2.9,6.2-4.6,10.1-4.6,7.4,0,13.4,6,13.4,13.4s-6,13.4-13.4,13.4Z"/>
+    <path d="M1099.1,931.4h-89.6c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h89.6c6.6,0,11.9-5.4,11.9-11.9s-5.4-11.9-11.9-11.9-7.1,1.6-9.3,4.5c-.9,1.1-2.4,1.3-3.5.4-1.1-.9-1.3-2.4-.4-3.5,3.2-4.1,8.1-6.4,13.3-6.4,9.3,0,16.9,7.6,16.9,16.9s-7.6,16.9-16.9,16.9Z"/>
+    <path d="M1088.6,972.2c-4.7,0-9.1-2-12.2-5.6-.9-1.1-.8-2.6.3-3.5,1.1-.9,2.6-.8,3.5.3,2.1,2.4,5.1,3.8,8.4,3.8,6.1,0,11-4.9,11-11s-4.9-11-11-11h-45.6c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h45.6c8.8,0,16,7.2,16,16s-7.2,16-16,16Z"/>
+    <path d="M1032.2,945.2h-10.9c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h10.9c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
+  </g></svg>`
+};
+
+const CLOTHES = {
+  camiseta: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="-39.5 -30.0 555.0 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6">
+  <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+  
+  <g>
+    <g>
+      <polyline class="st1" points="335.8 32 430.2 126.4 383 205 335.8 189.3"/>
+      <polyline class="st1" points="99.8 32 5.4 126.4 52.6 205 99.8 189.3"/>
+      <path class="st1" d="M335.8,32l-47.2-15.7c-39.2,42-102.4,42-141.6,0l-47.2,15.7v346.1h236V32Z"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M1227.1,51.2c30.2,101.6,50.1,206.3,62.3,312.7-16.9,7.1-34.8,11.5-53.1,12.9-13.4-54.9-25.8-108.5-38.1-162-.3,43.9-.5,88.5-.6,133.2-71.2,23-147.5,23-217.3,1.2-.2-46.2.2-91.7.5-137.3-13.3,55.2-26.4,110.8-39.4,166.3-16.3-3.2-32.4-7-48-12.2,6.7-106.6,25.5-212.4,55.8-314.8l.2-.6c23-16.5,47.1-28.2,72.2-32.9,42.7,13.3,89.6,12.4,132.9-2.3,25.6,8.1,49.9,20.2,72.6,35.8Z"/>
+      <path class="st1" d="M1198.3,214.7c-5.5-82.9,3.6-138.3,28.8-163.5"/>
+      <path class="st1" d="M949.3,51c27,24.5,38,93.8,31.7,160.7"/>
+      <path class="st1" d="M1021.6,17.6c11,24.6,38.5,42,65.4,41.9,27-.2,56.8-19.4,67.5-44.2"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M1897.7,21.1s-19.8,9.7-19.8,47.8,55.7,31.7,87.2,31.7c0,0-71.4-39.6-71.4-71.4s39.7-23.8,71.4-23.8,71.4,7.9,71.4,23.8c0,31.7-71.4,71.4-71.4,71.4,31.6,0,87.2-14.3,87.2-31.7,0-38.1-19.8-47.8-19.8-47.8"/>
+      <path class="st1" d="M2014.8,64.9c-24.6-4-49.6-4-49.6-4,0,0-25.1,0-49.6,4"/>
+      <line class="st1" x1="1989" y1="148.1" x2="1989" y2="98.5"/>
+      <line class="st1" x1="1941.4" y1="148.1" x2="1941.4" y2="98.5"/>
+      <path class="st1" d="M2068.3,124.4c7.9,47.6,15.9,111,15.9,142.7,0,47.6-23.8,55.5-23.8,55.5h-190.3s-23.8-7.9-23.8-55.5,7.9-95.2,15.9-142.7"/>
+      <polyline class="st1" points="2060.3 322.6 2060.3 354.3 1870 354.3 1870 322.6"/>
+      <path class="st1" d="M2052.4,68.8c71.4,15.9,87.2,134.8,87.2,222s-7.9,55.5-7.9,55.5"/>
+      <path class="st1" d="M1878,68.8c-71.4,15.9-87.2,134.8-87.2,222s7.9,55.5,7.9,55.5"/>
+      <path class="st1" d="M2084.1,346.4h47.6v31.7h-47.6v-31.7c-5.7-8.6-9.4-21.3-11.7-34"/>
+      <path class="st1" d="M1846.2,346.4h-47.6v31.7h47.6v-31.7c5.7-8.6,9.4-21.3,11.7-34"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M2817.1,128.7c9.3-4.4,41.2-10.3,60.9,6l23.8-52.4.8-1.9c6-13.3,4.3-28.3-3.5-39.9-2.8-4.4-6.6-8.2-11.2-11.4-12.9-8.5-28.9-16.2-45.2-16.2h-51.1c-16.3,0-32.3,7.6-45.2,16.2-4.6,3.2-8.4,7-11.2,11.4-7.8,11.6-9.5,26.6-3.5,39.9l.8,1.9,23.8,52.4c19.7-16.3,51.5-10.3,60.9-6Z"/>
+      <path class="st1" d="M2796.8,12.9l-17.4,10.6c-6.4,4.1-8.7,12.4-5.3,19.3,2.3,4.6,5.1,10.1,8.1,16.2,14.3,28.7,34.4,68.8,34.8,69.7.4-.9,20.5-41,34.8-69.7,3-6.1,5.8-11.6,8.1-16.2,3.4-6.8,1.1-15.2-5.3-19.3l-17.4-10.6"/>
+      <path class="st1" d="M2735.1,40.4c-10.1,4.3-60.6,27.3-60.6,56.7,0,0,6.2,10.2,13.4,23.9,9.3,17.6,20.3,41,22.3,55.7,2.6,19.8-11.1,96,2.2,138.4,4.5,14.3,11.3,25.9,23.5,29.1v33.8h162.3v-33.8c12.2-3.2,19.1-14.8,23.5-29.1,13.3-42.4-.4-118.6,2.2-138.4,2-14.7,13-38.1,22.3-55.7,7.2-13.7,13.4-23.9,13.4-23.9,0-29.4-50.5-52.4-60.6-56.7"/>
+      <polyline class="st1" points="2898.2 344.3 2817.1 344.3 2735.9 344.3"/>
+      <path class="st1" d="M2959.6,97.1s26.5,59.8,26.5,233.7-6.8,13.5-6.8,13.5c0,0-39.7,0-40.6,0-7.5.3-17-6.8-17-29.1"/>
+      <path class="st1" d="M2674.5,97.1s-26.5,59.8-26.5,233.7,6.8,13.5,6.8,13.5c0,0,39.7,0,40.6,0,7.5.3,17-6.8,17-29.1"/>
+      <polyline class="st1" points="2938.8 344.3 2938.8 344.3 2938.8 378.1 2979.4 378.1 2979.4 344.3"/>
+      <polyline class="st1" points="2695.3 344.3 2695.3 344.3 2695.3 378.1 2654.7 378.1 2654.7 344.3"/>
+      <path class="st1" d="M2906.1,84.2c2.3,2.3,10,9.9,35.6,35.6"/>
+      <path class="st1" d="M2728,84.2c-2.3,2.3-10,9.9-35.6,35.6"/>
+      <path class="st1" d="M2850.9,236.1l1.1,5.5c5.2,26.6,22.3,49.6,46.2,62.1"/>
+      <path class="st1" d="M2783.2,236.1l-1.1,5.5c-5.2,26.6-22.3,49.6-46.2,62.1"/>
+      <polyline class="st1" points="2817.1 128.7 2817.1 344.3 2817.1 378.1"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M3618.1,131s-14.5,7.3-14.5,36.3,14.5,36.3,14.5,36.3c0,0-14.5,7.3-14.5,36.3s14.5,36.3,14.5,36.3c0,0-14.5,7.3-14.5,36.3s14.5,36.3,14.5,36.3h188.9s14.5-7.3,14.5-36.3-14.5-36.3-14.5-36.3c0,0,14.5-7.3,14.5-36.3s-14.5-36.3-14.5-36.3c0,0,14.5-7.3,14.5-36.3s-14.5-36.3-14.5-36.3"/>
+      <path class="st1" d="M3821.2,98.1c36.7,11.2,29.4,54.8,29.4,54.8,0,0,14.5,6.5,14.5,32.8s-7.3,32.7-7.3,32.7c0,0,7.3,6.5,7.3,32.8s-7.3,32.7-7.3,32.7c0,0,7.3,6.6,7.3,32.8s-14.5,32.8-14.5,32.8h-94.5"/>
+      <path class="st1" d="M3603.9,98.1c-36.7,11.2-29.4,54.8-29.4,54.8,0,0-14.5,6.5-14.5,32.8s7.3,32.7,7.3,32.7c0,0-7.3,6.5-7.3,32.8s7.3,32.7,7.3,32.7c0,0-7.3,6.6-7.3,32.8s14.5,32.8,14.5,32.8h94.5"/>
+      <line class="st1" x1="3807" y1="276.4" x2="3618.1" y2="276.4"/>
+      <line class="st1" x1="3807" y1="203.7" x2="3618.1" y2="203.7"/>
+      <line class="st1" x1="3807" y1="131" x2="3618.1" y2="131"/>
+      <path class="st1" d="M3770.7,58.4s50.9,14.5,50.9,43.6-6.8,21.3-14.5,29.1"/>
+      <path class="st1" d="M3654.4,58.4s-50.9,14.5-50.9,43.6,6.8,21.3,14.5,29.1"/>
+      <path class="st1" d="M3654.4,58.4s-50.9,14.5-50.9,43.6,6.8,21.3,14.5,29.1"/>
+      <line class="st1" x1="3850.6" y1="152.8" x2="3820.8" y2="157.1"/>
+      <line class="st1" x1="3574.5" y1="152.8" x2="3604.3" y2="157.1"/>
+      <line class="st1" x1="3857.9" y1="218.2" x2="3819.4" y2="222.7"/>
+      <line class="st1" x1="3567.2" y1="218.2" x2="3605.7" y2="222.7"/>
+      <line class="st1" x1="3857.9" y1="283.6" x2="3817" y2="288.4"/>
+      <line class="st1" x1="3567.2" y1="283.6" x2="3608.1" y2="288.4"/>
+      <polyline class="st1" points="3850.6 349.3 3850.6 378.1 3799.8 378.1 3799.8 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <line class="st1" x1="3712.6" y1="58.4" x2="3712.6" y2="349"/>
+      <path class="st1" d="M3712.6,94.7c43.6,0,58.1-36.3,58.1-36.3v-7.3c0-20.1-16.3-36.3-36.3-36.3h-43.6c-20.1,0-36.3,16.3-36.3,36.3v7.3s14.5,36.3,58.1,36.3Z"/>
+      <path class="st1" d="M3663.9,26.6c5.3,9.8,20.3,31.8,48.6,31.8s43.3-21.9,48.6-31.8"/>
+    </g>
+    
+  </g>
+</svg>`,
+  jersey: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="848.0 -30.0 526.5 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6">
+  <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+  
+  <g>
+    <g>
+      <polyline class="st1" points="335.8 32 430.2 126.4 383 205 335.8 189.3"/>
+      <polyline class="st1" points="99.8 32 5.4 126.4 52.6 205 99.8 189.3"/>
+      <path class="st1" d="M335.8,32l-47.2-15.7c-39.2,42-102.4,42-141.6,0l-47.2,15.7v346.1h236V32Z"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M1227.1,51.2c30.2,101.6,50.1,206.3,62.3,312.7-16.9,7.1-34.8,11.5-53.1,12.9-13.4-54.9-25.8-108.5-38.1-162-.3,43.9-.5,88.5-.6,133.2-71.2,23-147.5,23-217.3,1.2-.2-46.2.2-91.7.5-137.3-13.3,55.2-26.4,110.8-39.4,166.3-16.3-3.2-32.4-7-48-12.2,6.7-106.6,25.5-212.4,55.8-314.8l.2-.6c23-16.5,47.1-28.2,72.2-32.9,42.7,13.3,89.6,12.4,132.9-2.3,25.6,8.1,49.9,20.2,72.6,35.8Z"/>
+      <path class="st1" d="M1198.3,214.7c-5.5-82.9,3.6-138.3,28.8-163.5"/>
+      <path class="st1" d="M949.3,51c27,24.5,38,93.8,31.7,160.7"/>
+      <path class="st1" d="M1021.6,17.6c11,24.6,38.5,42,65.4,41.9,27-.2,56.8-19.4,67.5-44.2"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M1897.7,21.1s-19.8,9.7-19.8,47.8,55.7,31.7,87.2,31.7c0,0-71.4-39.6-71.4-71.4s39.7-23.8,71.4-23.8,71.4,7.9,71.4,23.8c0,31.7-71.4,71.4-71.4,71.4,31.6,0,87.2-14.3,87.2-31.7,0-38.1-19.8-47.8-19.8-47.8"/>
+      <path class="st1" d="M2014.8,64.9c-24.6-4-49.6-4-49.6-4,0,0-25.1,0-49.6,4"/>
+      <line class="st1" x1="1989" y1="148.1" x2="1989" y2="98.5"/>
+      <line class="st1" x1="1941.4" y1="148.1" x2="1941.4" y2="98.5"/>
+      <path class="st1" d="M2068.3,124.4c7.9,47.6,15.9,111,15.9,142.7,0,47.6-23.8,55.5-23.8,55.5h-190.3s-23.8-7.9-23.8-55.5,7.9-95.2,15.9-142.7"/>
+      <polyline class="st1" points="2060.3 322.6 2060.3 354.3 1870 354.3 1870 322.6"/>
+      <path class="st1" d="M2052.4,68.8c71.4,15.9,87.2,134.8,87.2,222s-7.9,55.5-7.9,55.5"/>
+      <path class="st1" d="M1878,68.8c-71.4,15.9-87.2,134.8-87.2,222s7.9,55.5,7.9,55.5"/>
+      <path class="st1" d="M2084.1,346.4h47.6v31.7h-47.6v-31.7c-5.7-8.6-9.4-21.3-11.7-34"/>
+      <path class="st1" d="M1846.2,346.4h-47.6v31.7h47.6v-31.7c5.7-8.6,9.4-21.3,11.7-34"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M2817.1,128.7c9.3-4.4,41.2-10.3,60.9,6l23.8-52.4.8-1.9c6-13.3,4.3-28.3-3.5-39.9-2.8-4.4-6.6-8.2-11.2-11.4-12.9-8.5-28.9-16.2-45.2-16.2h-51.1c-16.3,0-32.3,7.6-45.2,16.2-4.6,3.2-8.4,7-11.2,11.4-7.8,11.6-9.5,26.6-3.5,39.9l.8,1.9,23.8,52.4c19.7-16.3,51.5-10.3,60.9-6Z"/>
+      <path class="st1" d="M2796.8,12.9l-17.4,10.6c-6.4,4.1-8.7,12.4-5.3,19.3,2.3,4.6,5.1,10.1,8.1,16.2,14.3,28.7,34.4,68.8,34.8,69.7.4-.9,20.5-41,34.8-69.7,3-6.1,5.8-11.6,8.1-16.2,3.4-6.8,1.1-15.2-5.3-19.3l-17.4-10.6"/>
+      <path class="st1" d="M2735.1,40.4c-10.1,4.3-60.6,27.3-60.6,56.7,0,0,6.2,10.2,13.4,23.9,9.3,17.6,20.3,41,22.3,55.7,2.6,19.8-11.1,96,2.2,138.4,4.5,14.3,11.3,25.9,23.5,29.1v33.8h162.3v-33.8c12.2-3.2,19.1-14.8,23.5-29.1,13.3-42.4-.4-118.6,2.2-138.4,2-14.7,13-38.1,22.3-55.7,7.2-13.7,13.4-23.9,13.4-23.9,0-29.4-50.5-52.4-60.6-56.7"/>
+      <polyline class="st1" points="2898.2 344.3 2817.1 344.3 2735.9 344.3"/>
+      <path class="st1" d="M2959.6,97.1s26.5,59.8,26.5,233.7-6.8,13.5-6.8,13.5c0,0-39.7,0-40.6,0-7.5.3-17-6.8-17-29.1"/>
+      <path class="st1" d="M2674.5,97.1s-26.5,59.8-26.5,233.7,6.8,13.5,6.8,13.5c0,0,39.7,0,40.6,0,7.5.3,17-6.8,17-29.1"/>
+      <polyline class="st1" points="2938.8 344.3 2938.8 344.3 2938.8 378.1 2979.4 378.1 2979.4 344.3"/>
+      <polyline class="st1" points="2695.3 344.3 2695.3 344.3 2695.3 378.1 2654.7 378.1 2654.7 344.3"/>
+      <path class="st1" d="M2906.1,84.2c2.3,2.3,10,9.9,35.6,35.6"/>
+      <path class="st1" d="M2728,84.2c-2.3,2.3-10,9.9-35.6,35.6"/>
+      <path class="st1" d="M2850.9,236.1l1.1,5.5c5.2,26.6,22.3,49.6,46.2,62.1"/>
+      <path class="st1" d="M2783.2,236.1l-1.1,5.5c-5.2,26.6-22.3,49.6-46.2,62.1"/>
+      <polyline class="st1" points="2817.1 128.7 2817.1 344.3 2817.1 378.1"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M3618.1,131s-14.5,7.3-14.5,36.3,14.5,36.3,14.5,36.3c0,0-14.5,7.3-14.5,36.3s14.5,36.3,14.5,36.3c0,0-14.5,7.3-14.5,36.3s14.5,36.3,14.5,36.3h188.9s14.5-7.3,14.5-36.3-14.5-36.3-14.5-36.3c0,0,14.5-7.3,14.5-36.3s-14.5-36.3-14.5-36.3c0,0,14.5-7.3,14.5-36.3s-14.5-36.3-14.5-36.3"/>
+      <path class="st1" d="M3821.2,98.1c36.7,11.2,29.4,54.8,29.4,54.8,0,0,14.5,6.5,14.5,32.8s-7.3,32.7-7.3,32.7c0,0,7.3,6.5,7.3,32.8s-7.3,32.7-7.3,32.7c0,0,7.3,6.6,7.3,32.8s-14.5,32.8-14.5,32.8h-94.5"/>
+      <path class="st1" d="M3603.9,98.1c-36.7,11.2-29.4,54.8-29.4,54.8,0,0-14.5,6.5-14.5,32.8s7.3,32.7,7.3,32.7c0,0-7.3,6.5-7.3,32.8s7.3,32.7,7.3,32.7c0,0-7.3,6.6-7.3,32.8s14.5,32.8,14.5,32.8h94.5"/>
+      <line class="st1" x1="3807" y1="276.4" x2="3618.1" y2="276.4"/>
+      <line class="st1" x1="3807" y1="203.7" x2="3618.1" y2="203.7"/>
+      <line class="st1" x1="3807" y1="131" x2="3618.1" y2="131"/>
+      <path class="st1" d="M3770.7,58.4s50.9,14.5,50.9,43.6-6.8,21.3-14.5,29.1"/>
+      <path class="st1" d="M3654.4,58.4s-50.9,14.5-50.9,43.6,6.8,21.3,14.5,29.1"/>
+      <path class="st1" d="M3654.4,58.4s-50.9,14.5-50.9,43.6,6.8,21.3,14.5,29.1"/>
+      <line class="st1" x1="3850.6" y1="152.8" x2="3820.8" y2="157.1"/>
+      <line class="st1" x1="3574.5" y1="152.8" x2="3604.3" y2="157.1"/>
+      <line class="st1" x1="3857.9" y1="218.2" x2="3819.4" y2="222.7"/>
+      <line class="st1" x1="3567.2" y1="218.2" x2="3605.7" y2="222.7"/>
+      <line class="st1" x1="3857.9" y1="283.6" x2="3817" y2="288.4"/>
+      <line class="st1" x1="3567.2" y1="283.6" x2="3608.1" y2="288.4"/>
+      <polyline class="st1" points="3850.6 349.3 3850.6 378.1 3799.8 378.1 3799.8 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <line class="st1" x1="3712.6" y1="58.4" x2="3712.6" y2="349"/>
+      <path class="st1" d="M3712.6,94.7c43.6,0,58.1-36.3,58.1-36.3v-7.3c0-20.1-16.3-36.3-36.3-36.3h-43.6c-20.1,0-36.3,16.3-36.3,36.3v7.3s14.5,36.3,58.1,36.3Z"/>
+      <path class="st1" d="M3663.9,26.6c5.3,9.8,20.3,31.8,48.6,31.8s43.3-21.9,48.6-31.8"/>
+    </g>
+    
+  </g>
+</svg>`,
+  sudadera: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="1745.0 -30.0 479.6 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6">
+  <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+  
+  <g>
+    <g>
+      <polyline class="st1" points="335.8 32 430.2 126.4 383 205 335.8 189.3"/>
+      <polyline class="st1" points="99.8 32 5.4 126.4 52.6 205 99.8 189.3"/>
+      <path class="st1" d="M335.8,32l-47.2-15.7c-39.2,42-102.4,42-141.6,0l-47.2,15.7v346.1h236V32Z"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M1227.1,51.2c30.2,101.6,50.1,206.3,62.3,312.7-16.9,7.1-34.8,11.5-53.1,12.9-13.4-54.9-25.8-108.5-38.1-162-.3,43.9-.5,88.5-.6,133.2-71.2,23-147.5,23-217.3,1.2-.2-46.2.2-91.7.5-137.3-13.3,55.2-26.4,110.8-39.4,166.3-16.3-3.2-32.4-7-48-12.2,6.7-106.6,25.5-212.4,55.8-314.8l.2-.6c23-16.5,47.1-28.2,72.2-32.9,42.7,13.3,89.6,12.4,132.9-2.3,25.6,8.1,49.9,20.2,72.6,35.8Z"/>
+      <path class="st1" d="M1198.3,214.7c-5.5-82.9,3.6-138.3,28.8-163.5"/>
+      <path class="st1" d="M949.3,51c27,24.5,38,93.8,31.7,160.7"/>
+      <path class="st1" d="M1021.6,17.6c11,24.6,38.5,42,65.4,41.9,27-.2,56.8-19.4,67.5-44.2"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M1897.7,21.1s-19.8,9.7-19.8,47.8,55.7,31.7,87.2,31.7c0,0-71.4-39.6-71.4-71.4s39.7-23.8,71.4-23.8,71.4,7.9,71.4,23.8c0,31.7-71.4,71.4-71.4,71.4,31.6,0,87.2-14.3,87.2-31.7,0-38.1-19.8-47.8-19.8-47.8"/>
+      <path class="st1" d="M2014.8,64.9c-24.6-4-49.6-4-49.6-4,0,0-25.1,0-49.6,4"/>
+      <line class="st1" x1="1989" y1="148.1" x2="1989" y2="98.5"/>
+      <line class="st1" x1="1941.4" y1="148.1" x2="1941.4" y2="98.5"/>
+      <path class="st1" d="M2068.3,124.4c7.9,47.6,15.9,111,15.9,142.7,0,47.6-23.8,55.5-23.8,55.5h-190.3s-23.8-7.9-23.8-55.5,7.9-95.2,15.9-142.7"/>
+      <polyline class="st1" points="2060.3 322.6 2060.3 354.3 1870 354.3 1870 322.6"/>
+      <path class="st1" d="M2052.4,68.8c71.4,15.9,87.2,134.8,87.2,222s-7.9,55.5-7.9,55.5"/>
+      <path class="st1" d="M1878,68.8c-71.4,15.9-87.2,134.8-87.2,222s7.9,55.5,7.9,55.5"/>
+      <path class="st1" d="M2084.1,346.4h47.6v31.7h-47.6v-31.7c-5.7-8.6-9.4-21.3-11.7-34"/>
+      <path class="st1" d="M1846.2,346.4h-47.6v31.7h47.6v-31.7c5.7-8.6,9.4-21.3,11.7-34"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M2817.1,128.7c9.3-4.4,41.2-10.3,60.9,6l23.8-52.4.8-1.9c6-13.3,4.3-28.3-3.5-39.9-2.8-4.4-6.6-8.2-11.2-11.4-12.9-8.5-28.9-16.2-45.2-16.2h-51.1c-16.3,0-32.3,7.6-45.2,16.2-4.6,3.2-8.4,7-11.2,11.4-7.8,11.6-9.5,26.6-3.5,39.9l.8,1.9,23.8,52.4c19.7-16.3,51.5-10.3,60.9-6Z"/>
+      <path class="st1" d="M2796.8,12.9l-17.4,10.6c-6.4,4.1-8.7,12.4-5.3,19.3,2.3,4.6,5.1,10.1,8.1,16.2,14.3,28.7,34.4,68.8,34.8,69.7.4-.9,20.5-41,34.8-69.7,3-6.1,5.8-11.6,8.1-16.2,3.4-6.8,1.1-15.2-5.3-19.3l-17.4-10.6"/>
+      <path class="st1" d="M2735.1,40.4c-10.1,4.3-60.6,27.3-60.6,56.7,0,0,6.2,10.2,13.4,23.9,9.3,17.6,20.3,41,22.3,55.7,2.6,19.8-11.1,96,2.2,138.4,4.5,14.3,11.3,25.9,23.5,29.1v33.8h162.3v-33.8c12.2-3.2,19.1-14.8,23.5-29.1,13.3-42.4-.4-118.6,2.2-138.4,2-14.7,13-38.1,22.3-55.7,7.2-13.7,13.4-23.9,13.4-23.9,0-29.4-50.5-52.4-60.6-56.7"/>
+      <polyline class="st1" points="2898.2 344.3 2817.1 344.3 2735.9 344.3"/>
+      <path class="st1" d="M2959.6,97.1s26.5,59.8,26.5,233.7-6.8,13.5-6.8,13.5c0,0-39.7,0-40.6,0-7.5.3-17-6.8-17-29.1"/>
+      <path class="st1" d="M2674.5,97.1s-26.5,59.8-26.5,233.7,6.8,13.5,6.8,13.5c0,0,39.7,0,40.6,0,7.5.3,17-6.8,17-29.1"/>
+      <polyline class="st1" points="2938.8 344.3 2938.8 344.3 2938.8 378.1 2979.4 378.1 2979.4 344.3"/>
+      <polyline class="st1" points="2695.3 344.3 2695.3 344.3 2695.3 378.1 2654.7 378.1 2654.7 344.3"/>
+      <path class="st1" d="M2906.1,84.2c2.3,2.3,10,9.9,35.6,35.6"/>
+      <path class="st1" d="M2728,84.2c-2.3,2.3-10,9.9-35.6,35.6"/>
+      <path class="st1" d="M2850.9,236.1l1.1,5.5c5.2,26.6,22.3,49.6,46.2,62.1"/>
+      <path class="st1" d="M2783.2,236.1l-1.1,5.5c-5.2,26.6-22.3,49.6-46.2,62.1"/>
+      <polyline class="st1" points="2817.1 128.7 2817.1 344.3 2817.1 378.1"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M3618.1,131s-14.5,7.3-14.5,36.3,14.5,36.3,14.5,36.3c0,0-14.5,7.3-14.5,36.3s14.5,36.3,14.5,36.3c0,0-14.5,7.3-14.5,36.3s14.5,36.3,14.5,36.3h188.9s14.5-7.3,14.5-36.3-14.5-36.3-14.5-36.3c0,0,14.5-7.3,14.5-36.3s-14.5-36.3-14.5-36.3c0,0,14.5-7.3,14.5-36.3s-14.5-36.3-14.5-36.3"/>
+      <path class="st1" d="M3821.2,98.1c36.7,11.2,29.4,54.8,29.4,54.8,0,0,14.5,6.5,14.5,32.8s-7.3,32.7-7.3,32.7c0,0,7.3,6.5,7.3,32.8s-7.3,32.7-7.3,32.7c0,0,7.3,6.6,7.3,32.8s-14.5,32.8-14.5,32.8h-94.5"/>
+      <path class="st1" d="M3603.9,98.1c-36.7,11.2-29.4,54.8-29.4,54.8,0,0-14.5,6.5-14.5,32.8s7.3,32.7,7.3,32.7c0,0-7.3,6.5-7.3,32.8s7.3,32.7,7.3,32.7c0,0-7.3,6.6-7.3,32.8s14.5,32.8,14.5,32.8h94.5"/>
+      <line class="st1" x1="3807" y1="276.4" x2="3618.1" y2="276.4"/>
+      <line class="st1" x1="3807" y1="203.7" x2="3618.1" y2="203.7"/>
+      <line class="st1" x1="3807" y1="131" x2="3618.1" y2="131"/>
+      <path class="st1" d="M3770.7,58.4s50.9,14.5,50.9,43.6-6.8,21.3-14.5,29.1"/>
+      <path class="st1" d="M3654.4,58.4s-50.9,14.5-50.9,43.6,6.8,21.3,14.5,29.1"/>
+      <path class="st1" d="M3654.4,58.4s-50.9,14.5-50.9,43.6,6.8,21.3,14.5,29.1"/>
+      <line class="st1" x1="3850.6" y1="152.8" x2="3820.8" y2="157.1"/>
+      <line class="st1" x1="3574.5" y1="152.8" x2="3604.3" y2="157.1"/>
+      <line class="st1" x1="3857.9" y1="218.2" x2="3819.4" y2="222.7"/>
+      <line class="st1" x1="3567.2" y1="218.2" x2="3605.7" y2="222.7"/>
+      <line class="st1" x1="3857.9" y1="283.6" x2="3817" y2="288.4"/>
+      <line class="st1" x1="3567.2" y1="283.6" x2="3608.1" y2="288.4"/>
+      <polyline class="st1" points="3850.6 349.3 3850.6 378.1 3799.8 378.1 3799.8 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <line class="st1" x1="3712.6" y1="58.4" x2="3712.6" y2="349"/>
+      <path class="st1" d="M3712.6,94.7c43.6,0,58.1-36.3,58.1-36.3v-7.3c0-20.1-16.3-36.3-36.3-36.3h-43.6c-20.1,0-36.3,16.3-36.3,36.3v7.3s14.5,36.3,58.1,36.3Z"/>
+      <path class="st1" d="M3663.9,26.6c5.3,9.8,20.3,31.8,48.6,31.8s43.3-21.9,48.6-31.8"/>
+    </g>
+    
+  </g>
+</svg>`,
+  chaqueta: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="2602.1 -30.0 501.5 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6">
+  <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+  
+  <g>
+    <g>
+      <polyline class="st1" points="335.8 32 430.2 126.4 383 205 335.8 189.3"/>
+      <polyline class="st1" points="99.8 32 5.4 126.4 52.6 205 99.8 189.3"/>
+      <path class="st1" d="M335.8,32l-47.2-15.7c-39.2,42-102.4,42-141.6,0l-47.2,15.7v346.1h236V32Z"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M1227.1,51.2c30.2,101.6,50.1,206.3,62.3,312.7-16.9,7.1-34.8,11.5-53.1,12.9-13.4-54.9-25.8-108.5-38.1-162-.3,43.9-.5,88.5-.6,133.2-71.2,23-147.5,23-217.3,1.2-.2-46.2.2-91.7.5-137.3-13.3,55.2-26.4,110.8-39.4,166.3-16.3-3.2-32.4-7-48-12.2,6.7-106.6,25.5-212.4,55.8-314.8l.2-.6c23-16.5,47.1-28.2,72.2-32.9,42.7,13.3,89.6,12.4,132.9-2.3,25.6,8.1,49.9,20.2,72.6,35.8Z"/>
+      <path class="st1" d="M1198.3,214.7c-5.5-82.9,3.6-138.3,28.8-163.5"/>
+      <path class="st1" d="M949.3,51c27,24.5,38,93.8,31.7,160.7"/>
+      <path class="st1" d="M1021.6,17.6c11,24.6,38.5,42,65.4,41.9,27-.2,56.8-19.4,67.5-44.2"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M1897.7,21.1s-19.8,9.7-19.8,47.8,55.7,31.7,87.2,31.7c0,0-71.4-39.6-71.4-71.4s39.7-23.8,71.4-23.8,71.4,7.9,71.4,23.8c0,31.7-71.4,71.4-71.4,71.4,31.6,0,87.2-14.3,87.2-31.7,0-38.1-19.8-47.8-19.8-47.8"/>
+      <path class="st1" d="M2014.8,64.9c-24.6-4-49.6-4-49.6-4,0,0-25.1,0-49.6,4"/>
+      <line class="st1" x1="1989" y1="148.1" x2="1989" y2="98.5"/>
+      <line class="st1" x1="1941.4" y1="148.1" x2="1941.4" y2="98.5"/>
+      <path class="st1" d="M2068.3,124.4c7.9,47.6,15.9,111,15.9,142.7,0,47.6-23.8,55.5-23.8,55.5h-190.3s-23.8-7.9-23.8-55.5,7.9-95.2,15.9-142.7"/>
+      <polyline class="st1" points="2060.3 322.6 2060.3 354.3 1870 354.3 1870 322.6"/>
+      <path class="st1" d="M2052.4,68.8c71.4,15.9,87.2,134.8,87.2,222s-7.9,55.5-7.9,55.5"/>
+      <path class="st1" d="M1878,68.8c-71.4,15.9-87.2,134.8-87.2,222s7.9,55.5,7.9,55.5"/>
+      <path class="st1" d="M2084.1,346.4h47.6v31.7h-47.6v-31.7c-5.7-8.6-9.4-21.3-11.7-34"/>
+      <path class="st1" d="M1846.2,346.4h-47.6v31.7h47.6v-31.7c5.7-8.6,9.4-21.3,11.7-34"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M2817.1,128.7c9.3-4.4,41.2-10.3,60.9,6l23.8-52.4.8-1.9c6-13.3,4.3-28.3-3.5-39.9-2.8-4.4-6.6-8.2-11.2-11.4-12.9-8.5-28.9-16.2-45.2-16.2h-51.1c-16.3,0-32.3,7.6-45.2,16.2-4.6,3.2-8.4,7-11.2,11.4-7.8,11.6-9.5,26.6-3.5,39.9l.8,1.9,23.8,52.4c19.7-16.3,51.5-10.3,60.9-6Z"/>
+      <path class="st1" d="M2796.8,12.9l-17.4,10.6c-6.4,4.1-8.7,12.4-5.3,19.3,2.3,4.6,5.1,10.1,8.1,16.2,14.3,28.7,34.4,68.8,34.8,69.7.4-.9,20.5-41,34.8-69.7,3-6.1,5.8-11.6,8.1-16.2,3.4-6.8,1.1-15.2-5.3-19.3l-17.4-10.6"/>
+      <path class="st1" d="M2735.1,40.4c-10.1,4.3-60.6,27.3-60.6,56.7,0,0,6.2,10.2,13.4,23.9,9.3,17.6,20.3,41,22.3,55.7,2.6,19.8-11.1,96,2.2,138.4,4.5,14.3,11.3,25.9,23.5,29.1v33.8h162.3v-33.8c12.2-3.2,19.1-14.8,23.5-29.1,13.3-42.4-.4-118.6,2.2-138.4,2-14.7,13-38.1,22.3-55.7,7.2-13.7,13.4-23.9,13.4-23.9,0-29.4-50.5-52.4-60.6-56.7"/>
+      <polyline class="st1" points="2898.2 344.3 2817.1 344.3 2735.9 344.3"/>
+      <path class="st1" d="M2959.6,97.1s26.5,59.8,26.5,233.7-6.8,13.5-6.8,13.5c0,0-39.7,0-40.6,0-7.5.3-17-6.8-17-29.1"/>
+      <path class="st1" d="M2674.5,97.1s-26.5,59.8-26.5,233.7,6.8,13.5,6.8,13.5c0,0,39.7,0,40.6,0,7.5.3,17-6.8,17-29.1"/>
+      <polyline class="st1" points="2938.8 344.3 2938.8 344.3 2938.8 378.1 2979.4 378.1 2979.4 344.3"/>
+      <polyline class="st1" points="2695.3 344.3 2695.3 344.3 2695.3 378.1 2654.7 378.1 2654.7 344.3"/>
+      <path class="st1" d="M2906.1,84.2c2.3,2.3,10,9.9,35.6,35.6"/>
+      <path class="st1" d="M2728,84.2c-2.3,2.3-10,9.9-35.6,35.6"/>
+      <path class="st1" d="M2850.9,236.1l1.1,5.5c5.2,26.6,22.3,49.6,46.2,62.1"/>
+      <path class="st1" d="M2783.2,236.1l-1.1,5.5c-5.2,26.6-22.3,49.6-46.2,62.1"/>
+      <polyline class="st1" points="2817.1 128.7 2817.1 344.3 2817.1 378.1"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M3618.1,131s-14.5,7.3-14.5,36.3,14.5,36.3,14.5,36.3c0,0-14.5,7.3-14.5,36.3s14.5,36.3,14.5,36.3c0,0-14.5,7.3-14.5,36.3s14.5,36.3,14.5,36.3h188.9s14.5-7.3,14.5-36.3-14.5-36.3-14.5-36.3c0,0,14.5-7.3,14.5-36.3s-14.5-36.3-14.5-36.3c0,0,14.5-7.3,14.5-36.3s-14.5-36.3-14.5-36.3"/>
+      <path class="st1" d="M3821.2,98.1c36.7,11.2,29.4,54.8,29.4,54.8,0,0,14.5,6.5,14.5,32.8s-7.3,32.7-7.3,32.7c0,0,7.3,6.5,7.3,32.8s-7.3,32.7-7.3,32.7c0,0,7.3,6.6,7.3,32.8s-14.5,32.8-14.5,32.8h-94.5"/>
+      <path class="st1" d="M3603.9,98.1c-36.7,11.2-29.4,54.8-29.4,54.8,0,0-14.5,6.5-14.5,32.8s7.3,32.7,7.3,32.7c0,0-7.3,6.5-7.3,32.8s7.3,32.7,7.3,32.7c0,0-7.3,6.6-7.3,32.8s14.5,32.8,14.5,32.8h94.5"/>
+      <line class="st1" x1="3807" y1="276.4" x2="3618.1" y2="276.4"/>
+      <line class="st1" x1="3807" y1="203.7" x2="3618.1" y2="203.7"/>
+      <line class="st1" x1="3807" y1="131" x2="3618.1" y2="131"/>
+      <path class="st1" d="M3770.7,58.4s50.9,14.5,50.9,43.6-6.8,21.3-14.5,29.1"/>
+      <path class="st1" d="M3654.4,58.4s-50.9,14.5-50.9,43.6,6.8,21.3,14.5,29.1"/>
+      <path class="st1" d="M3654.4,58.4s-50.9,14.5-50.9,43.6,6.8,21.3,14.5,29.1"/>
+      <line class="st1" x1="3850.6" y1="152.8" x2="3820.8" y2="157.1"/>
+      <line class="st1" x1="3574.5" y1="152.8" x2="3604.3" y2="157.1"/>
+      <line class="st1" x1="3857.9" y1="218.2" x2="3819.4" y2="222.7"/>
+      <line class="st1" x1="3567.2" y1="218.2" x2="3605.7" y2="222.7"/>
+      <line class="st1" x1="3857.9" y1="283.6" x2="3817" y2="288.4"/>
+      <line class="st1" x1="3567.2" y1="283.6" x2="3608.1" y2="288.4"/>
+      <polyline class="st1" points="3850.6 349.3 3850.6 378.1 3799.8 378.1 3799.8 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <line class="st1" x1="3712.6" y1="58.4" x2="3712.6" y2="349"/>
+      <path class="st1" d="M3712.6,94.7c43.6,0,58.1-36.3,58.1-36.3v-7.3c0-20.1-16.3-36.3-36.3-36.3h-43.6c-20.1,0-36.3,16.3-36.3,36.3v7.3s14.5,36.3,58.1,36.3Z"/>
+      <path class="st1" d="M3663.9,26.6c5.3,9.8,20.3,31.8,48.6,31.8s43.3-21.9,48.6-31.8"/>
+    </g>
+    
+  </g>
+</svg>`,
+  plumas: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="3514.1 -30.0 435.5 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="6">
+  <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+  
+  <g>
+    <g>
+      <polyline class="st1" points="335.8 32 430.2 126.4 383 205 335.8 189.3"/>
+      <polyline class="st1" points="99.8 32 5.4 126.4 52.6 205 99.8 189.3"/>
+      <path class="st1" d="M335.8,32l-47.2-15.7c-39.2,42-102.4,42-141.6,0l-47.2,15.7v346.1h236V32Z"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M1227.1,51.2c30.2,101.6,50.1,206.3,62.3,312.7-16.9,7.1-34.8,11.5-53.1,12.9-13.4-54.9-25.8-108.5-38.1-162-.3,43.9-.5,88.5-.6,133.2-71.2,23-147.5,23-217.3,1.2-.2-46.2.2-91.7.5-137.3-13.3,55.2-26.4,110.8-39.4,166.3-16.3-3.2-32.4-7-48-12.2,6.7-106.6,25.5-212.4,55.8-314.8l.2-.6c23-16.5,47.1-28.2,72.2-32.9,42.7,13.3,89.6,12.4,132.9-2.3,25.6,8.1,49.9,20.2,72.6,35.8Z"/>
+      <path class="st1" d="M1198.3,214.7c-5.5-82.9,3.6-138.3,28.8-163.5"/>
+      <path class="st1" d="M949.3,51c27,24.5,38,93.8,31.7,160.7"/>
+      <path class="st1" d="M1021.6,17.6c11,24.6,38.5,42,65.4,41.9,27-.2,56.8-19.4,67.5-44.2"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M1897.7,21.1s-19.8,9.7-19.8,47.8,55.7,31.7,87.2,31.7c0,0-71.4-39.6-71.4-71.4s39.7-23.8,71.4-23.8,71.4,7.9,71.4,23.8c0,31.7-71.4,71.4-71.4,71.4,31.6,0,87.2-14.3,87.2-31.7,0-38.1-19.8-47.8-19.8-47.8"/>
+      <path class="st1" d="M2014.8,64.9c-24.6-4-49.6-4-49.6-4,0,0-25.1,0-49.6,4"/>
+      <line class="st1" x1="1989" y1="148.1" x2="1989" y2="98.5"/>
+      <line class="st1" x1="1941.4" y1="148.1" x2="1941.4" y2="98.5"/>
+      <path class="st1" d="M2068.3,124.4c7.9,47.6,15.9,111,15.9,142.7,0,47.6-23.8,55.5-23.8,55.5h-190.3s-23.8-7.9-23.8-55.5,7.9-95.2,15.9-142.7"/>
+      <polyline class="st1" points="2060.3 322.6 2060.3 354.3 1870 354.3 1870 322.6"/>
+      <path class="st1" d="M2052.4,68.8c71.4,15.9,87.2,134.8,87.2,222s-7.9,55.5-7.9,55.5"/>
+      <path class="st1" d="M1878,68.8c-71.4,15.9-87.2,134.8-87.2,222s7.9,55.5,7.9,55.5"/>
+      <path class="st1" d="M2084.1,346.4h47.6v31.7h-47.6v-31.7c-5.7-8.6-9.4-21.3-11.7-34"/>
+      <path class="st1" d="M1846.2,346.4h-47.6v31.7h47.6v-31.7c5.7-8.6,9.4-21.3,11.7-34"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M2817.1,128.7c9.3-4.4,41.2-10.3,60.9,6l23.8-52.4.8-1.9c6-13.3,4.3-28.3-3.5-39.9-2.8-4.4-6.6-8.2-11.2-11.4-12.9-8.5-28.9-16.2-45.2-16.2h-51.1c-16.3,0-32.3,7.6-45.2,16.2-4.6,3.2-8.4,7-11.2,11.4-7.8,11.6-9.5,26.6-3.5,39.9l.8,1.9,23.8,52.4c19.7-16.3,51.5-10.3,60.9-6Z"/>
+      <path class="st1" d="M2796.8,12.9l-17.4,10.6c-6.4,4.1-8.7,12.4-5.3,19.3,2.3,4.6,5.1,10.1,8.1,16.2,14.3,28.7,34.4,68.8,34.8,69.7.4-.9,20.5-41,34.8-69.7,3-6.1,5.8-11.6,8.1-16.2,3.4-6.8,1.1-15.2-5.3-19.3l-17.4-10.6"/>
+      <path class="st1" d="M2735.1,40.4c-10.1,4.3-60.6,27.3-60.6,56.7,0,0,6.2,10.2,13.4,23.9,9.3,17.6,20.3,41,22.3,55.7,2.6,19.8-11.1,96,2.2,138.4,4.5,14.3,11.3,25.9,23.5,29.1v33.8h162.3v-33.8c12.2-3.2,19.1-14.8,23.5-29.1,13.3-42.4-.4-118.6,2.2-138.4,2-14.7,13-38.1,22.3-55.7,7.2-13.7,13.4-23.9,13.4-23.9,0-29.4-50.5-52.4-60.6-56.7"/>
+      <polyline class="st1" points="2898.2 344.3 2817.1 344.3 2735.9 344.3"/>
+      <path class="st1" d="M2959.6,97.1s26.5,59.8,26.5,233.7-6.8,13.5-6.8,13.5c0,0-39.7,0-40.6,0-7.5.3-17-6.8-17-29.1"/>
+      <path class="st1" d="M2674.5,97.1s-26.5,59.8-26.5,233.7,6.8,13.5,6.8,13.5c0,0,39.7,0,40.6,0,7.5.3,17-6.8,17-29.1"/>
+      <polyline class="st1" points="2938.8 344.3 2938.8 344.3 2938.8 378.1 2979.4 378.1 2979.4 344.3"/>
+      <polyline class="st1" points="2695.3 344.3 2695.3 344.3 2695.3 378.1 2654.7 378.1 2654.7 344.3"/>
+      <path class="st1" d="M2906.1,84.2c2.3,2.3,10,9.9,35.6,35.6"/>
+      <path class="st1" d="M2728,84.2c-2.3,2.3-10,9.9-35.6,35.6"/>
+      <path class="st1" d="M2850.9,236.1l1.1,5.5c5.2,26.6,22.3,49.6,46.2,62.1"/>
+      <path class="st1" d="M2783.2,236.1l-1.1,5.5c-5.2,26.6-22.3,49.6-46.2,62.1"/>
+      <polyline class="st1" points="2817.1 128.7 2817.1 344.3 2817.1 378.1"/>
+    </g>
+    
+  </g>
+  <g>
+    <g>
+      <path class="st1" d="M3618.1,131s-14.5,7.3-14.5,36.3,14.5,36.3,14.5,36.3c0,0-14.5,7.3-14.5,36.3s14.5,36.3,14.5,36.3c0,0-14.5,7.3-14.5,36.3s14.5,36.3,14.5,36.3h188.9s14.5-7.3,14.5-36.3-14.5-36.3-14.5-36.3c0,0,14.5-7.3,14.5-36.3s-14.5-36.3-14.5-36.3c0,0,14.5-7.3,14.5-36.3s-14.5-36.3-14.5-36.3"/>
+      <path class="st1" d="M3821.2,98.1c36.7,11.2,29.4,54.8,29.4,54.8,0,0,14.5,6.5,14.5,32.8s-7.3,32.7-7.3,32.7c0,0,7.3,6.5,7.3,32.8s-7.3,32.7-7.3,32.7c0,0,7.3,6.6,7.3,32.8s-14.5,32.8-14.5,32.8h-94.5"/>
+      <path class="st1" d="M3603.9,98.1c-36.7,11.2-29.4,54.8-29.4,54.8,0,0-14.5,6.5-14.5,32.8s7.3,32.7,7.3,32.7c0,0-7.3,6.5-7.3,32.8s7.3,32.7,7.3,32.7c0,0-7.3,6.6-7.3,32.8s14.5,32.8,14.5,32.8h94.5"/>
+      <line class="st1" x1="3807" y1="276.4" x2="3618.1" y2="276.4"/>
+      <line class="st1" x1="3807" y1="203.7" x2="3618.1" y2="203.7"/>
+      <line class="st1" x1="3807" y1="131" x2="3618.1" y2="131"/>
+      <path class="st1" d="M3770.7,58.4s50.9,14.5,50.9,43.6-6.8,21.3-14.5,29.1"/>
+      <path class="st1" d="M3654.4,58.4s-50.9,14.5-50.9,43.6,6.8,21.3,14.5,29.1"/>
+      <path class="st1" d="M3654.4,58.4s-50.9,14.5-50.9,43.6,6.8,21.3,14.5,29.1"/>
+      <line class="st1" x1="3850.6" y1="152.8" x2="3820.8" y2="157.1"/>
+      <line class="st1" x1="3574.5" y1="152.8" x2="3604.3" y2="157.1"/>
+      <line class="st1" x1="3857.9" y1="218.2" x2="3819.4" y2="222.7"/>
+      <line class="st1" x1="3567.2" y1="218.2" x2="3605.7" y2="222.7"/>
+      <line class="st1" x1="3857.9" y1="283.6" x2="3817" y2="288.4"/>
+      <line class="st1" x1="3567.2" y1="283.6" x2="3608.1" y2="288.4"/>
+      <polyline class="st1" points="3850.6 349.3 3850.6 378.1 3799.8 378.1 3799.8 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <polyline class="st1" points="3574.5 349.3 3574.5 378.1 3625.4 378.1 3625.4 349"/>
+      <line class="st1" x1="3712.6" y1="58.4" x2="3712.6" y2="349"/>
+      <path class="st1" d="M3712.6,94.7c43.6,0,58.1-36.3,58.1-36.3v-7.3c0-20.1-16.3-36.3-36.3-36.3h-43.6c-20.1,0-36.3,16.3-36.3,36.3v7.3s14.5,36.3,58.1,36.3Z"/>
+      <path class="st1" d="M3663.9,26.6c5.3,9.8,20.3,31.8,48.6,31.8s43.3-21.9,48.6-31.8"/>
+    </g>
+    
+  </g>
+</svg>`
+};
+
+// pequeña flecha SVG para las horas
+function arrowSVG(deg, sz=13) {
+  return `<svg width="${sz}" height="${sz}" viewBox="0 0 13 13" style="transform:rotate(${deg}deg);flex-shrink:0;opacity:0.6">
+    <polygon points="6.5,1 8.5,6.5 6.5,8.5 4.5,6.5" fill="currentColor"/>
+    <polygon points="6.5,12 8.5,6.5 6.5,8.5 4.5,6.5" fill="currentColor" opacity="0.25"/>
+  </svg>`;
+}
+
+function wmoIcon(code, isDay) {
+  if (code===0)  return isDay ? ICONS.sun : ICONS.moon;
+  if (code<=2)   return isDay ? ICONS.cloudsun : ICONS.cloudmoon;
+  if (code===3)  return ICONS.cloud;
+  if (code<=49)  return ICONS.fog;
+  if (code<=59)  return ICONS.drizzle;
+  if (code<=69)  return ICONS.rain;
+  if (code<=79)  return ICONS.snow;
+  if (code<=82)  return ICONS.rain;
+  if (code<=86)  return ICONS.snow;
+  if (code===95) return ICONS.stormrain;
+  if (code<=99)  return ICONS.stormrain;
+  return ICONS.cloud;
+}
+function wmoText(code) {
+  if (code===0)  return 'Despejado';
+  if (code<=2)   return 'Poco nuboso';
+  if (code===3)  return 'Nublado';
+  if (code<=49)  return 'Niebla';
+  if (code<=59)  return 'Llovizna';
+  if (code<=69)  return 'Lluvia';
+  if (code<=79)  return 'Nieve';
+  if (code<=82)  return 'Chubascos';
+  if (code<=86)  return 'Nieve';
+  if (code<=99)  return 'Tormenta';
+  return '—';
+}
+
+// ═══════════════════════════════════════════
+// DIRECCIÓN VIENTO
+// ═══════════════════════════════════════════
+function windDirLabel(deg) {
+  const d = ((deg%360)+360)%360;
+  // Levante y Poniente tienen prioridad para la costa almeriense
+  if (d>=67.5  && d<112.5) return 'Levante';
+  if (d>=247.5 && d<292.5) return 'Poniente';
+  if (d>=337.5 || d<22.5)  return 'Norte';
+  if (d>=22.5  && d<67.5)  return 'Noreste';
+  if (d>=112.5 && d<157.5) return 'Sureste';
+  if (d>=157.5 && d<202.5) return 'Sur';
+  if (d>=202.5 && d<247.5) return 'Suroeste';
+  return 'Noroeste';
+}
+
+function windEffect(deg, speed, temp, apparent) {
+  const label = windDirLabel(deg);
+  const diff = Math.round(apparent - temp);
+  const sText = diff > 0 ? `+${diff}° sobre la real` : diff < 0 ? `${diff}° bajo la real` : 'sin diferencia térmica';
+  if (speed < 10) return `${label} muy flojo · ${sText}`;
+  if (speed < 25) return `${label} suave · ${sText}`;
+  if (speed < 40) return `${label} moderado · ${sText}`;
+  return `${label} fuerte · ${sText} · condiciones de playa difíciles`;
+}
+
+// ═══════════════════════════════════════════
+// BRÚJULA ANIMADA — oscilación tipo analógico
+// ═══════════════════════════════════════════
+let compassTargetDeg = 0;
+let compassRunning = false;
+
+function startCompassLoop() {
+  if (compassRunning) return;
+  compassRunning = true;
+  const needle = document.getElementById('compass-needle');
+  if (!needle) return;
+
+  let t = 0;
+  // arranque: la aguja parte de 0° y gira hasta el objetivo con rebote
+  let settled = false;
+  let settleT = 0;
+
+  function tick() {
+    t += 0.02;
+    let displayDeg;
+    if (!settled) {
+      // easing hacia el objetivo durante el primer segundo y medio
+      const progress = Math.min(settleT / 1.3, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const overshoot = Math.sin(progress * Math.PI) * 12 * (1 - progress);
+      displayDeg = compassTargetDeg * eased + overshoot;
+      settleT += 0.02;
+      if (progress >= 1) settled = true;
+    } else {
+      // vida continua: pequeña oscilación tipo aguja real, nunca del todo quieta
+      const wobble = Math.sin(t * 1.1) * 1.8 + Math.sin(t * 2.7) * 0.7;
+      displayDeg = compassTargetDeg + wobble;
+    }
+    needle.setAttribute('transform', `rotate(${displayDeg} 45 45)`);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function setCompassDirection(deg) {
+  compassTargetDeg = deg;
+  startCompassLoop();
+}
+
+// ═══════════════════════════════════════════
+// ESTRELLAS
+// ═══════════════════════════════════════════
+function initStars() {
+  const canvas = document.getElementById('stars-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const stars = Array.from({length:140}, ()=>({
+    x:Math.random()*canvas.width, y:Math.random()*canvas.height*0.82,
+    r:Math.random()*1.1+0.3, alpha:Math.random()*0.5+0.15,
+    speed:Math.random()*0.012+0.003, phase:Math.random()*Math.PI*2
+  }));
+  const w=canvas.width, h=canvas.height;
+  const cp=[[.60,.15],[.56,.20],[.63,.23],[.68,.18],[.65,.13],[.58,.12],[.72,.23],[.76,.26]];
+  const cl=[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[3,6],[6,7]];
+  const cs=cp.map(([px,py])=>({x:px*w,y:py*h,r:1.7,alpha:.65,speed:.005,phase:Math.random()*Math.PI*2}));
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height); t+=0.016;
+    ctx.strokeStyle='rgba(170,190,255,0.09)'; ctx.lineWidth=0.5;
+    cl.forEach(([a,b])=>{ctx.beginPath();ctx.moveTo(cs[a].x,cs[a].y);ctx.lineTo(cs[b].x,cs[b].y);ctx.stroke();});
+    [...stars,...cs].forEach(s=>{
+      const a=s.alpha*(0.65+0.35*Math.sin(t*s.speed*60+s.phase));
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(210,222,255,${a})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ═══════════════════════════════════════════
+// TEMA
+// ═══════════════════════════════════════════
+function applyTheme(temp, isNight) {
+  const b=document.body;
+  if (isNight) {
+    b.style.setProperty('--bg-c1','#0A0F2A');
+    b.style.setProperty('--bg-c2','#1A1050');
+    b.style.setProperty('--bg-white','#080C1E');
+    b.classList.add('is-night');
+  } else {
+    b.classList.remove('is-night');
+    b.style.setProperty('--bg-white','#FAFAF8');
+    if (temp < 12) {
+      b.style.setProperty('--bg-c1','#5B8DB8');
+      b.style.setProperty('--bg-c2','#9BB5CA');
+    } else if (temp < 18) {
+      b.style.setProperty('--bg-c1','#74B3CE');
+      b.style.setProperty('--bg-c2','#A0B4D6');
+    } else if (temp < 24) {
+      b.style.setProperty('--bg-c1','#7EC8A4');
+      b.style.setProperty('--bg-c2','#A8D8EA');
+    } else if (temp < 30) {
+      b.style.setProperty('--bg-c1','#FFB347');
+      b.style.setProperty('--bg-c2','#FFD9A0');
+    } else {
+      b.style.setProperty('--bg-c1','#FF8C42');
+      b.style.setProperty('--bg-c2','#FFD166');
+    }
+  }
+}
+
+// ═══════════════════════════════════════════
+// GEOCODING
+// ═══════════════════════════════════════════
+async function reverseGeocode(lat,lon) {
+  try {
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=es`);
+    const d=await r.json();
+    return d.address?.city||d.address?.town||d.address?.village||d.address?.municipality||'Mi ubicación';
+  } catch { return 'Mi ubicación'; }
+}
+
+// ═══════════════════════════════════════════
+// OPEN-METEO
+// ═══════════════════════════════════════════
+async function fetchWeather(lat,lon) {
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+    +`&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day`
+    +`&hourly=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m`
+    +`&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_direction_10m_dominant`
+    +`&timezone=auto&forecast_days=7`;
+  return (await fetch(url)).json();
+}
+
+// ═══════════════════════════════════════════
+// ROPA SEGÚN TEMPERATURA APARENTE
+// ═══════════════════════════════════════════
+function getClothes(apparentTemp) {
+  if (apparentTemp >= 23) return { icon: CLOTHES.camiseta, label: 'Camiseta manga corta' };
+  if (apparentTemp >= 17) return { icon: CLOTHES.jersey,   label: 'Jersey fino' };
+  if (apparentTemp >= 14) return { icon: CLOTHES.sudadera,  label: 'Sudadera' };
+  if (apparentTemp >= 5)  return { icon: CLOTHES.chaqueta,  label: 'Chaqueta' };
+  return { icon: CLOTHES.plumas, label: 'Plumas' };
+}
+
+
+async function fetchAISummary(data, city) {
+  const key = localStorage.getItem('anthropic_api_key');
+  const el = document.getElementById('ai-summary');
+  if (!key) {
+    el.textContent='Configura tu API key de Anthropic para ver el resumen.';
+    el.classList.remove('loading'); return;
+  }
+
+  const c=data.current, d=data.daily, h=data.hourly;
+  const nowIdx=new Date().getHours();
+  // temperaturas por franja
+  const tempMorning = Math.round(h.temperature_2m[Math.min(9, nowIdx)] ?? c.temperature_2m);
+  const tempAfternoon = Math.round(h.temperature_2m[Math.min(15, nowIdx)] ?? c.temperature_2m);
+  const tempEvening = Math.round(h.temperature_2m[Math.min(21, nowIdx)] ?? c.temperature_2m);
+  const windNow = Math.round(c.wind_speed_10m);
+  const windDir = windDirLabel(c.wind_direction_10m);
+
+  const prompt=`Eres meteorólogo experto en la costa de Almería (sureste de España). Responde SOLO en JSON válido, sin texto extra ni markdown. Formato exacto:
+{"resumen":"2-3 frases directas sobre el tiempo de hoy en ${city}. Menciona temperatura, ${windDir==='Levante'||windDir==='Poniente'?windDir+' (viento clave en esta costa)':windDir}, sensación térmica si difiere, y previsión del día. Concreto y útil."}
+
+Datos: ${Math.round(c.temperature_2m)}°C actual, sensación ${Math.round(c.apparent_temperature)}°C, ${wmoText(c.weather_code)}, viento ${windDir} ${windNow}km/h, máx ${Math.round(d.temperature_2m_max[0])}°/mín ${Math.round(d.temperature_2m_min[0])}°.`;
+
+  try {
+    const resp=await fetch('https://eltiempo.jose-853.workers.dev',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key
+      },
+      body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:300,messages:[{role:'user',content:prompt}]})
+    });
+    const json=await resp.json();
+
+    if (json.error) {
+      el.textContent='Error API: '+(json.error.message||JSON.stringify(json.error));
+      el.classList.remove('loading');
+      return;
+    }
+
+    let raw = json.content?.[0]?.text || '';
+    if (!raw) {
+      el.textContent='Respuesta vacía del servidor. ('+JSON.stringify(json).slice(0,150)+')';
+      el.classList.remove('loading');
+      return;
+    }
+
+    // Limpiar posible envoltorio markdown ```json ... ```
+    raw = raw.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'');
+    // Extraer solo el bloque {...} por si hay texto alrededor
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (match) raw = match[0];
+
+    let parsed;
+    try { parsed=JSON.parse(raw); } catch { parsed=null; }
+
+    if (parsed && parsed.resumen) {
+      el.textContent=parsed.resumen;
+      el.classList.remove('loading');
+      // Ropa: basada en temperatura aparente actual
+      const clothes = getClothes(c.apparent_temperature);
+      document.getElementById('clothes-icon-wrap').innerHTML = clothes.icon;
+      document.getElementById('clothes-label').textContent = clothes.label;
+      document.getElementById('clothes-block').style.display='flex';
+    } else {
+      el.textContent=raw.slice(0,300);
+      el.classList.remove('loading');
+    }
+  } catch(e) {
+    el.textContent='Error de conexión: '+e.message;
+    el.classList.remove('loading');
+  }
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+function renderWeather(data, city) {
+  const c=data.current, daily=data.daily, hourly=data.hourly;
+  const isNight=c.is_day===0;
+  applyTheme(Math.round(c.temperature_2m), isNight);
+
+  document.getElementById('location-name').textContent=city.toUpperCase();
+  document.getElementById('last-updated').textContent='Ahora';
+  document.getElementById('temp-value').textContent=Math.round(c.temperature_2m);
+  document.getElementById('condition-icon-svg').innerHTML=wmoIcon(c.weather_code,!isNight);
+  document.getElementById('condition-text').textContent=wmoText(c.weather_code);
+  document.getElementById('feels-like').textContent=Math.round(c.apparent_temperature);
+  document.getElementById('temp-max').textContent=Math.round(daily.temperature_2m_max[0]);
+  document.getElementById('temp-min').textContent=Math.round(daily.temperature_2m_min[0]);
+
+  // Viento
+  const wDir=c.wind_direction_10m, wSpd=Math.round(c.wind_speed_10m);
+  document.getElementById('wind-dir-label').textContent=windDirLabel(wDir);
+  document.getElementById('wind-speed').textContent=wSpd;
+  document.getElementById('wind-effect').textContent=windEffect(wDir,wSpd,c.temperature_2m,c.apparent_temperature);
+  setTimeout(()=>setCompassDirection(wDir), 600);
+
+  // Horario
+  const nowHour=new Date().getHours();
+  const hourlyEl=document.getElementById('hourly-scroll');
+  hourlyEl.innerHTML='';
+  for (let i=0;i<8;i++) {
+    const idx=nowHour+i;
+    if (idx>=hourly.temperature_2m.length) break;
+    const h=idx%24, isD=h>=7&&h<=20;
+    const div=document.createElement('div');
+    div.className='hourly-item'+(i===0?' current':'');
+    div.innerHTML=`
+      <div class="hourly-time">${i===0?'Ahora':h+'h'}</div>
+      <div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center">${wmoIcon(hourly.weather_code[idx],isD).replace('width="28"','width="22"').replace('height="28"','height="22"')}</div>
+      <div class="hourly-temp">${Math.round(hourly.temperature_2m[idx])}°</div>
+      <div class="hourly-wind-row">
+        ${arrowSVG(hourly.wind_direction_10m[idx])}
+        <span class="hourly-wind-spd">${Math.round(hourly.wind_speed_10m[idx])}</span>
+      </div>`;
+    hourlyEl.appendChild(div);
+  }
+
+  // Semanal
+  const days=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const todayDow=new Date().getDay();
+  const dailyEl=document.getElementById('daily-list');
+  dailyEl.innerHTML='';
+  for (let i=0;i<Math.min(7,daily.weather_code.length);i++) {
+    const dow=(todayDow+i)%7;
+    const div=document.createElement('div');
+    div.className='daily-item';
+    div.innerHTML=`
+      <div class="daily-day ${i===0?'today':''}">${i===0?'Hoy':days[dow]}</div>
+      <div class="daily-icon-wrap">${wmoIcon(daily.weather_code[i],true).replace('width="28"','width="22"').replace('height="28"','height="22"')}</div>
+      <div class="daily-temps"><span class="daily-max">${Math.round(daily.temperature_2m_max[i])}°</span><span class="daily-min">${Math.round(daily.temperature_2m_min[i])}°</span></div>`;
+    dailyEl.appendChild(div);
+  }
+
+  fetchAISummary(data, city);
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('app').style.display='flex';
+}
+
+// ═══════════════════════════════════════════
+// API KEY
+// ═══════════════════════════════════════════
+function saveApiKey() {
+  const k=document.getElementById('api-key-input').value.trim();
+  if (k) localStorage.setItem('anthropic_api_key',k);
+  document.getElementById('api-key-screen').style.display='none';
+  init();
+}
+function skipApiKey() {
+  localStorage.setItem('anthropic_api_key','');
+  document.getElementById('api-key-screen').style.display='none';
+  init();
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+async function init() {
+  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById('loading-city').textContent='Obteniendo ubicación…';
+  try {
+    const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:10000}));
+    const {latitude:lat,longitude:lon}=pos.coords;
+    document.getElementById('loading-city').textContent='Cargando datos…';
+    const [city,weather]=await Promise.all([reverseGeocode(lat,lon),fetchWeather(lat,lon)]);
+    renderWeather(weather,city);
+  } catch(err) {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('app').style.display='flex';
+    document.getElementById('app').innerHTML=`<div style="text-align:center;padding:60px 24px;color:var(--text-secondary);font-size:14px;line-height:1.6">No se pudo obtener la ubicación.<br>Permite el acceso y recarga la página.</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════
+// ARRANQUE
+// ═══════════════════════════════════════════
+initStars();
+if (!localStorage.getItem('api_key_asked')) {
+  localStorage.setItem('api_key_asked','1');
+  document.getElementById('loading').style.display='none';
+  document.getElementById('api-key-screen').style.display='flex';
+} else {
+  init();
+}
+</script>
+</body>
+</html>

@@ -1209,26 +1209,8 @@ function renderWeather(data, city) {
   document.getElementById('wind-effect').textContent=windEffect(wDir,wSpd,c.temperature_2m,c.apparent_temperature);
   setTimeout(()=>setCompassDirection(wDir), 600);
 
-  // Horario
+  // Horario — renderizado en renderHeroHourly (carrusel)
   const nowHour=new Date().getHours();
-  const hourlyEl=document.getElementById('hourly-scroll');
-  hourlyEl.innerHTML='';
-  for (let i=0;i<6;i++) {
-    const idx=nowHour+i;
-    if (idx>=hourly.temperature_2m.length) break;
-    const h=idx%24, isD=h>=7&&h<=20;
-    const div=document.createElement('div');
-    div.className='hourly-item'+(i===0?' current':'');
-    div.innerHTML=`
-      <div class="hourly-time">${i===0?'Ahora':h+'h'}</div>
-      <div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center">${wmoIcon(hourly.weather_code[idx],isD).replace('width="28"','width="26"').replace('height="28"','height="26"')}</div>
-      <div class="hourly-temp">${Math.round(hourly.temperature_2m[idx])}°</div>
-      <div class="hourly-wind-row">
-        ${arrowSVG(hourly.wind_direction_10m[idx])}
-        <span class="hourly-wind-spd">${Math.round(hourly.wind_speed_10m[idx])}</span>
-      </div>`;
-    hourlyEl.appendChild(div);
-  }
 
   // Semanal
   const days=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];

@@ -51,8 +51,8 @@ body.is-night #stars-canvas { opacity:1; }
 /* HERO */
 .hero { display:flex; flex-direction:column; align-items:center; text-align:center; padding:32px 0 26px; }
 .temp-row { display:flex; align-items:flex-start; line-height:1; }
-.temp-value { font-size:clamp(100px,27vw,124px); font-weight:300; letter-spacing:-0.04em; color:var(--text-primary); line-height:0.88; }
-.temp-unit { font-size:clamp(34px,9vw,46px); font-weight:300; color:var(--text-primary); margin-top:12px; margin-left:3px; opacity:0.7; }
+.temp-value { font-size:clamp(100px,27vw,124px); font-weight:200; letter-spacing:-0.04em; color:var(--text-primary); line-height:0.88; }
+.temp-unit { font-size:clamp(34px,9vw,46px); font-weight:200; color:var(--text-primary); margin-top:12px; margin-left:3px; opacity:0.7; }
 .condition-row { margin-top:16px; display:flex; align-items:center; justify-content:center; gap:10px; }
 .condition-text { font-size:20px; font-weight:200; color:var(--text-secondary); letter-spacing:-0.01em; }
 .feels-row { margin-top:9px; font-size:13px; color:var(--text-tertiary); }
@@ -163,6 +163,72 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
   animation: ptr-spin 0.7s linear infinite;
 }
 @keyframes ptr-spin { to { transform: rotate(360deg); } }
+
+/* HERO CARRUSEL */
+.hero-carousel {
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.hero-pages {
+  display: flex;
+  transition: transform 0.38s cubic-bezier(0.4,0,0.2,1);
+  will-change: transform;
+}
+.hero-page {
+  min-width: 100%;
+  flex-shrink: 0;
+}
+.hero-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+.hero-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  opacity: 0.18;
+  transition: opacity 0.25s;
+}
+.hero-dot.active { opacity: 0.5; }
+
+/* PRÓXIMAS HORAS en hero */
+.hero-hourly {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0 16px;
+  gap: 0;
+}
+.hero-hourly-scroll {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  width: 100%;
+  padding: 0 8px;
+}
+.hero-hourly-scroll::-webkit-scrollbar { display: none; }
+.hero-hour-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 14.28%;
+  padding: 10px 4px;
+  flex-shrink: 0;
+}
+.hero-hour-item.current {
+  background: var(--accent-color, rgba(255,140,66,0.18));
+  border-radius: 12px;
+}
+.hero-hour-time { font-size: 11px; color: var(--text-tertiary); font-weight: 500; }
+.hero-hour-temp { font-size: 17px; font-weight: 200; color: var(--text-primary); }
+.hero-hour-feel { font-size: 10px; color: var(--text-tertiary); }
 </style>
 </head>
 <body>
@@ -200,20 +266,37 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
     <span class="last-updated" id="last-updated"></span>
   </div>
 
-  <!-- HERO -->
-  <div class="hero">
-    <div class="temp-row">
-      <span class="temp-value" id="temp-value">—</span>
-      <span class="temp-unit">°C</span>
+  <!-- HERO CARRUSEL -->
+  <div class="hero-carousel" id="hero-carousel">
+    <div class="hero-pages" id="hero-pages">
+      <!-- Página 1: temperatura actual -->
+      <div class="hero-page">
+        <div class="hero">
+          <div class="temp-row">
+            <span class="temp-value" id="temp-value">—</span>
+            <span class="temp-unit">°C</span>
+          </div>
+          <div class="condition-row">
+            <span id="condition-icon-svg"></span>
+            <span class="condition-text" id="condition-text">—</span>
+          </div>
+          <div class="feels-row">Sensación <span id="feels-like">—</span>°C</div>
+          <div class="minmax-row">
+            <span>↑ <b id="temp-max">—</b>°</span>
+            <span>↓ <b id="temp-min">—</b>°</span>
+          </div>
+        </div>
+      </div>
+      <!-- Página 2: próximas horas -->
+      <div class="hero-page">
+        <div class="hero-hourly">
+          <div class="hero-hourly-scroll" id="hero-hourly-scroll"></div>
+        </div>
+      </div>
     </div>
-    <div class="condition-row">
-      <span id="condition-icon-svg"></span>
-      <span class="condition-text" id="condition-text">—</span>
-    </div>
-    <div class="feels-row">Sensación <span id="feels-like">—</span>°C</div>
-    <div class="minmax-row">
-      <span>↑ <b id="temp-max">—</b>°</span>
-      <span>↓ <b id="temp-min">—</b>°</span>
+    <div class="hero-dots">
+      <div class="hero-dot active" id="dot-0"></div>
+      <div class="hero-dot" id="dot-1"></div>
     </div>
   </div>
 
@@ -950,27 +1033,56 @@ function applyTheme(temp, isNight) {
     b.classList.add('is-night');
   } else {
     b.classList.remove('is-night');
-    b.style.setProperty('--bg-white','#FAFAF8');
-    if (temp < 12) {
-      b.style.setProperty('--bg-c1','#5B8DB8');
-      b.style.setProperty('--bg-c2','#9BB5CA');
-      b.style.setProperty('--accent-color','rgba(91,141,184,0.22)');
-    } else if (temp < 18) {
-      b.style.setProperty('--bg-c1','#74B3CE');
-      b.style.setProperty('--bg-c2','#A0B4D6');
-      b.style.setProperty('--accent-color','rgba(116,179,206,0.22)');
+    b.style.setProperty('--bg-white','#F4F4F4');
+    // Escala AEMET adaptada
+    if (temp < 0) {
+      b.style.setProperty('--bg-c1','#7B4FA6');
+      b.style.setProperty('--bg-c2','#9B6FC0');
+      b.style.setProperty('--accent-color','rgba(123,79,166,0.22)');
+    } else if (temp < 4) {
+      b.style.setProperty('--bg-c1','#3A3AB0');
+      b.style.setProperty('--bg-c2','#6060C8');
+      b.style.setProperty('--accent-color','rgba(58,58,176,0.22)');
+    } else if (temp < 8) {
+      b.style.setProperty('--bg-c1','#3A7FD4');
+      b.style.setProperty('--bg-c2','#6AAAE8');
+      b.style.setProperty('--accent-color','rgba(58,127,212,0.22)');
+    } else if (temp < 12) {
+      b.style.setProperty('--bg-c1','#40B4E0');
+      b.style.setProperty('--bg-c2','#80D0F0');
+      b.style.setProperty('--accent-color','rgba(64,180,224,0.22)');
+    } else if (temp < 16) {
+      b.style.setProperty('--bg-c1','#38C8C8');
+      b.style.setProperty('--bg-c2','#70DCD8');
+      b.style.setProperty('--accent-color','rgba(56,200,200,0.22)');
+    } else if (temp < 20) {
+      b.style.setProperty('--bg-c1','#60C840');
+      b.style.setProperty('--bg-c2','#90DC70');
+      b.style.setProperty('--accent-color','rgba(96,200,64,0.22)');
     } else if (temp < 24) {
-      b.style.setProperty('--bg-c1','#7EC8A4');
-      b.style.setProperty('--bg-c2','#A8D8EA');
-      b.style.setProperty('--accent-color','rgba(126,200,164,0.22)');
-    } else if (temp < 30) {
-      b.style.setProperty('--bg-c1','#FFB347');
-      b.style.setProperty('--bg-c2','#FFD9A0');
-      b.style.setProperty('--accent-color','rgba(255,179,71,0.25)');
+      b.style.setProperty('--bg-c1','#C8D400');
+      b.style.setProperty('--bg-c2','#DCEC40');
+      b.style.setProperty('--accent-color','rgba(200,212,0,0.22)');
+    } else if (temp < 28) {
+      b.style.setProperty('--bg-c1','#F0C000');
+      b.style.setProperty('--bg-c2','#F8D840');
+      b.style.setProperty('--accent-color','rgba(240,192,0,0.25)');
+    } else if (temp < 32) {
+      b.style.setProperty('--bg-c1','#F08020');
+      b.style.setProperty('--bg-c2','#F8AC50');
+      b.style.setProperty('--accent-color','rgba(240,128,32,0.25)');
+    } else if (temp < 36) {
+      b.style.setProperty('--bg-c1','#E83020');
+      b.style.setProperty('--bg-c2','#F06050');
+      b.style.setProperty('--accent-color','rgba(232,48,32,0.25)');
+    } else if (temp < 40) {
+      b.style.setProperty('--bg-c1','#C81040');
+      b.style.setProperty('--bg-c2','#E04060');
+      b.style.setProperty('--accent-color','rgba(200,16,64,0.25)');
     } else {
-      b.style.setProperty('--bg-c1','#FF8C42');
-      b.style.setProperty('--bg-c2','#FFD166');
-      b.style.setProperty('--accent-color','rgba(255,140,66,0.28)');
+      b.style.setProperty('--bg-c1','#7B1A1A');
+      b.style.setProperty('--bg-c2','#A03030');
+      b.style.setProperty('--accent-color','rgba(123,26,26,0.25)');
     }
   }
 }
@@ -1166,6 +1278,7 @@ function renderWeather(data, city) {
   }
   document.getElementById('clothes-block').style.display='flex';
 
+  renderHeroHourly(hourly, nowHour, isNight);
   fetchAISummary(data, city);
   document.getElementById('loading').classList.add('hidden');
   document.getElementById('app').style.display='flex';
@@ -1262,6 +1375,78 @@ if (!localStorage.getItem('api_key_asked')) {
     }
   }, { passive: true });
 })();
+
+
+// ── HERO CARRUSEL (swipe) ──
+(function() {
+  const pages = document.getElementById('hero-pages');
+  const dots = [document.getElementById('dot-0'), document.getElementById('dot-1')];
+  let current = 0;
+  let startX = 0;
+  let startY = 0;
+  let dragging = false;
+  let isHorizontal = null;
+
+  function goTo(idx) {
+    current = idx;
+    pages.style.transform = `translateX(${-idx * 100}%)`;
+    dots.forEach((d,i) => d.classList.toggle('active', i===idx));
+  }
+
+  pages.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    dragging = true;
+    isHorizontal = null;
+    pages.style.transition = 'none';
+  }, { passive: true });
+
+  pages.addEventListener('touchmove', function(e) {
+    if (!dragging) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (isHorizontal === null) {
+      isHorizontal = Math.abs(dx) > Math.abs(dy);
+    }
+    if (!isHorizontal) return;
+    const base = -current * 100;
+    const pct = (dx / window.innerWidth) * 100;
+    pages.style.transform = `translateX(calc(${base}% + ${dx}px))`;
+  }, { passive: true });
+
+  pages.addEventListener('touchend', function(e) {
+    if (!dragging || !isHorizontal) { dragging = false; return; }
+    dragging = false;
+    pages.style.transition = '';
+    const dx = e.changedTouches[0].clientX - startX;
+    if (dx < -50 && current === 0) goTo(1);
+    else if (dx > 50 && current === 1) goTo(0);
+    else goTo(current);
+  }, { passive: true });
+})();
+
+// ── RENDER HERO HOURLY ──
+function renderHeroHourly(hourly, nowHour, isNight) {
+  const el = document.getElementById('hero-hourly-scroll');
+  if (!el) return;
+  el.innerHTML = '';
+  for (let i = 0; i < 7; i++) {
+    const idx = nowHour + i;
+    if (idx >= hourly.temperature_2m.length) break;
+    const h = idx % 24;
+    const isD = h >= 7 && h <= 20;
+    const div = document.createElement('div');
+    div.className = 'hero-hour-item' + (i === 0 ? ' current' : '');
+    const iconH = wmoIcon(hourly.weather_code[idx], isD)
+      .replace('width="28"','width="24"').replace('height="28"','height="24"');
+    div.innerHTML = `
+      <div class="hero-hour-time">${i === 0 ? 'Ahora' : h + 'h'}</div>
+      ${iconH}
+      <div class="hero-hour-temp">${Math.round(hourly.temperature_2m[idx])}°</div>
+      <div class="hero-hour-feel">${Math.round(hourly.apparent_temperature[idx])}°</div>`;
+    el.appendChild(div);
+  }
+}
 
 </script>
 </body>

@@ -47,6 +47,9 @@ body.is-night #stars-canvas { opacity:1; }
 .loc-icon { width:13px; height:13px; opacity:0.4; }
 .location-name { font-size:12px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-secondary); }
 .last-updated { font-size:11px; color:var(--text-tertiary); }
+.header-right { display:flex; align-items:center; gap:12px; }
+.settings-gear { width:16px; height:16px; opacity:0.4; cursor:pointer; background:none; border:none; padding:0; color:var(--text-secondary); }
+.settings-gear:active { opacity:0.7; }
 
 /* HERO */
 .hero { display:flex; flex-direction:column; align-items:center; text-align:center; padding:32px 0 26px; }
@@ -131,6 +134,9 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
 .api-key-input:focus { border-color:rgba(26,26,46,0.3); }
 .api-key-btn { padding:14px 32px; background:rgba(26,26,46,0.85); color:white; border:none; border-radius:14px; font-family:'Inter',sans-serif; font-size:14px; font-weight:500; cursor:pointer; }
 .api-key-skip { font-size:12px; color:rgba(26,26,46,0.35); cursor:pointer; text-decoration:underline; }
+.settings-textarea { width:100%; max-width:340px; padding:14px 18px; border:1px solid rgba(26,26,46,0.15); border-radius:14px; font-family:'Inter',sans-serif; font-size:13px; background:rgba(255,255,255,0.7); color:rgba(26,26,46,0.8); outline:none; resize:none; min-height:20px; line-height:1.5; }
+.settings-textarea:focus { border-color:rgba(26,26,46,0.3); }
+.settings-field-label { width:100%; max-width:340px; font-size:11px; color:rgba(26,26,46,0.4); text-align:left; margin:-10px 0 -8px 2px; }
 
 /* PULL TO REFRESH */
 .ptr-indicator {
@@ -243,11 +249,13 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
 
 
 <div class="api-key-screen" id="api-key-screen" style="display:none">
-  <h2>API key de Anthropic</h2>
-  <p>Para el resumen del día y consejo de ropa. Se guarda solo en tu dispositivo.</p>
-  <input class="api-key-input" id="api-key-input" type="password" placeholder="sk-ant-...">
-  <button class="api-key-btn" onclick="saveApiKey()">Guardar y continuar</button>
-  <span class="api-key-skip" onclick="skipApiKey()">Continuar sin IA</span>
+  <h2>Tu app del tiempo</h2>
+  <p>Para que el resumen te hable a ti, por tu nombre, con consejos según dónde estés. Todo se guarda solo en tu dispositivo.</p>
+  <input class="api-key-input" id="settings-name-input" type="text" placeholder="Tu nombre" autocomplete="off">
+  <textarea class="settings-textarea" id="settings-context-input" placeholder="Contexto (opcional, una línea). Ej: teletrabajo desde casa" rows="1"></textarea>
+  <input class="api-key-input" id="api-key-input" type="password" placeholder="API key de Anthropic (sk-ant-...)">
+  <button class="api-key-btn" id="settings-save-btn" onclick="saveSettings()">Guardar y continuar</button>
+  <span class="api-key-skip" id="settings-skip-link" onclick="skipApiKey()">Continuar sin IA</span>
 </div>
 
 <div class="loading-screen" id="loading">
@@ -264,7 +272,14 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
       </svg>
       <span class="location-name" id="location-name">—</span>
     </div>
-    <span class="last-updated" id="last-updated"></span>
+    <div class="header-right">
+      <span class="last-updated" id="last-updated"></span>
+      <button class="settings-gear" onclick="openSettings()" aria-label="Ajustes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <!-- HERO CARRUSEL -->
@@ -1133,10 +1148,16 @@ async function fetchAISummary(data, city) {
   const windNow = Math.round(c.wind_speed_10m);
   const windDir = windDirLabel(c.wind_direction_10m);
 
-  const prompt=`Eres meteorólogo experto en la costa de Almería (sureste de España). Responde SOLO en JSON válido, sin texto extra ni markdown. Formato exacto:
-{"resumen":"2-3 frases directas sobre el tiempo de hoy en ${city}. Menciona temperatura, ${windDir==='Levante'||windDir==='Poniente'?windDir+' (viento clave en esta costa)':windDir}, sensación térmica si difiere, y previsión del día. Concreto y útil."}
+  const userName = localStorage.getItem('user_name') || '';
+  const userContext = localStorage.getItem('user_context') || '';
 
-Datos: ${Math.round(c.temperature_2m)}°C actual, sensación ${Math.round(c.apparent_temperature)}°C, ${wmoText(c.weather_code)}, viento ${windDir} ${windNow}km/h, máx ${Math.round(d.temperature_2m_max[0])}°/mín ${Math.round(d.temperature_2m_min[0])}°.`;
+  const prompt=`Eres un meteorólogo español que escribe el resumen diario de una app del tiempo personal, hecha a medida para una sola persona. Responde SOLO en JSON válido, sin texto extra ni markdown. Formato exacto:
+{"resumen":"MÁXIMO 2-3 frases, sin excepción. Dirígete directamente a ${userName || 'el usuario'} por su nombre. Da temperatura, viento y previsión del día de forma concreta. Añade una recomendación práctica SOLO si hay algo accionable que la combinación de lugar, condiciones y contexto de fondo (si existe) justifique de verdad — si no hay nada específico que añadir, no fuerces una frase de relleno tipo 'lleva paraguas'. Es un RESUMEN: breve, directo, cercano, nunca un parte meteorológico largo."}
+
+UBICACIÓN ACTUAL (dato de GPS en tiempo real, es la única verdad sobre dónde está ahora mismo): ${city}.
+${userContext ? `CONTEXTO DE FONDO sobre ${userName || 'la persona'} (información general de su vida, rutinas o lugares donde suele estar en otras épocas — NO asumas que es donde está ahora mismo, solo úsalo si es coherente con la ubicación actual de arriba): ${userContext}.` : ''}
+Datos meteorológicos: ${Math.round(c.temperature_2m)}°C actual, sensación ${Math.round(c.apparent_temperature)}°C, ${wmoText(c.weather_code)}, viento de ${windDir} a ${windNow}km/h${windDir==='Levante'||windDir==='Poniente' ? ' (usa esta terminología solo si el lugar es costa almeriense; si no, ignórala)' : ''}, máx ${Math.round(d.temperature_2m_max[0])}°/mín ${Math.round(d.temperature_2m_min[0])}° hoy.
+Usa tu conocimiento general del lugar (¿es costa, interior, ciudad grande?) para que la recomendación tenga sentido ahí, no una genérica.`;
 
   try {
     const resp=await fetch('https://eltiempo.jose-853.workers.dev',{
@@ -1193,7 +1214,11 @@ function renderWeather(data, city) {
   const isNight=c.is_day===0;
   applyTheme(Math.round(c.temperature_2m), isNight);
 
-  document.getElementById('location-name').textContent=city.toUpperCase();
+  window.lastWeatherData = data;
+  window.lastWeatherCity = city;
+
+  const userName = localStorage.getItem('user_name');
+  document.getElementById('location-name').textContent = userName ? `${userName.toUpperCase()} · ${city.toUpperCase()}` : city.toUpperCase();
   document.getElementById('last-updated').textContent='Ahora';
   document.getElementById('temp-value').textContent=Math.round(c.temperature_2m);
   document.getElementById('condition-icon-svg').innerHTML=wmoIcon(c.weather_code,!isNight).replace('width="28"','width="32"').replace('height="28"','height="32"');
@@ -1263,16 +1288,56 @@ function renderWeather(data, city) {
 // ═══════════════════════════════════════════
 // API KEY
 // ═══════════════════════════════════════════
-function saveApiKey() {
-  const k=document.getElementById('api-key-input').value.trim();
-  if (k) localStorage.setItem('anthropic_api_key',k);
-  document.getElementById('api-key-screen').style.display='none';
-  init();
+let settingsIsFirstRun = true;
+
+function saveSettings() {
+  const k = document.getElementById('api-key-input').value.trim();
+  const name = document.getElementById('settings-name-input').value.trim();
+  const context = document.getElementById('settings-context-input').value.trim();
+  if (k) localStorage.setItem('anthropic_api_key', k);
+  localStorage.setItem('user_name', name);
+  localStorage.setItem('user_context', context);
+  document.getElementById('api-key-screen').style.display = 'none';
+  if (settingsIsFirstRun) {
+    init();
+  } else {
+    updateHeaderName();
+    if (window.lastWeatherData && window.lastWeatherCity) {
+      fetchAISummary(window.lastWeatherData, window.lastWeatherCity);
+    }
+  }
 }
+
 function skipApiKey() {
+  const name = document.getElementById('settings-name-input').value.trim();
+  const context = document.getElementById('settings-context-input').value.trim();
   localStorage.setItem('anthropic_api_key','');
+  localStorage.setItem('user_name', name);
+  localStorage.setItem('user_context', context);
   document.getElementById('api-key-screen').style.display='none';
-  init();
+  if (settingsIsFirstRun) {
+    init();
+  } else {
+    updateHeaderName();
+  }
+}
+
+function openSettings() {
+  settingsIsFirstRun = false;
+  document.getElementById('settings-name-input').value = localStorage.getItem('user_name') || '';
+  document.getElementById('settings-context-input').value = localStorage.getItem('user_context') || '';
+  document.getElementById('api-key-input').value = localStorage.getItem('anthropic_api_key') || '';
+  document.getElementById('settings-save-btn').textContent = 'Guardar';
+  document.getElementById('settings-skip-link').textContent = 'Cerrar';
+  document.getElementById('api-key-screen').style.display = 'flex';
+}
+
+function updateHeaderName() {
+  const name = localStorage.getItem('user_name');
+  const cityEl = document.getElementById('location-name');
+  if (name && window.lastWeatherCity) {
+    cityEl.textContent = `${name.toUpperCase()} · ${window.lastWeatherCity.toUpperCase()}`;
+  }
 }
 
 // ═══════════════════════════════════════════

@@ -22,15 +22,15 @@ body {
   min-height:100vh; min-height:-webkit-fill-available;
   overflow-x:hidden;
   background:
-    radial-gradient(ellipse 120% 55% at 30% -5%, var(--bg-c1) 0%, transparent 70%),
-    radial-gradient(ellipse 80% 45% at 85% 5%, var(--bg-c2) 0%, transparent 65%),
+    radial-gradient(ellipse 130% 60% at 25% -10%, var(--bg-c1) 0%, var(--bg-c1) 25%, transparent 65%),
+    radial-gradient(ellipse 90% 50% at 90% 0%, var(--bg-c2) 0%, var(--bg-c2) 20%, transparent 60%),
     var(--bg-white);
   transition:background 1.4s ease; color:var(--text-primary);
 }
 body.is-night {
   --text-primary:rgba(235,242,255,0.95); --text-secondary:rgba(235,242,255,0.52);
   --text-tertiary:rgba(235,242,255,0.28); --stroke:rgba(235,242,255,0.8);
-  background: radial-gradient(ellipse 120% 55% at 30% -5%, var(--bg-c1) 0%, transparent 70%), radial-gradient(ellipse 80% 45% at 85% 5%, var(--bg-c2) 0%, transparent 65%), var(--bg-white);
+  background: radial-gradient(ellipse 130% 60% at 25% -10%, var(--bg-c1) 0%, var(--bg-c1) 25%, transparent 65%), radial-gradient(ellipse 90% 50% at 90% 0%, var(--bg-c2) 0%, var(--bg-c2) 20%, transparent 60%), var(--bg-white);
 }
 #stars-canvas { position:fixed; inset:0; pointer-events:none; opacity:0; transition:opacity 1.8s ease; z-index:0; }
 body.is-night #stars-canvas { opacity:1; }
@@ -53,6 +53,7 @@ body.is-night #stars-canvas { opacity:1; }
 
 /* HERO */
 .hero { display:flex; flex-direction:column; align-items:center; text-align:center; padding:32px 0 26px; }
+.hero-city { font-size:20px; font-weight:700; letter-spacing:0.06em; color:var(--text-primary); margin-bottom:2px; }
 .temp-row { display:flex; align-items:flex-start; line-height:1; }
 .temp-value { font-size:clamp(100px,27vw,124px); font-weight:200 !important; letter-spacing:-0.04em; color:var(--text-primary); line-height:0.88; }
 .temp-unit { font-size:clamp(34px,9vw,46px); font-weight:200; color:var(--text-primary); margin-top:12px; margin-left:3px; opacity:0.7; }
@@ -67,6 +68,13 @@ body.is-night #stars-canvas { opacity:1; }
 .card { background:transparent; border:none; border-top:1px solid rgba(0,0,0,0.08); border-radius:0; padding:20px 0; backdrop-filter:none; -webkit-backdrop-filter:none; margin-bottom:0; }
 body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
 .card-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-primary); margin-bottom:16px; text-align:center; opacity:0.75; }
+.hum-precip-card { padding:16px 0; }
+.hum-precip-row { display:flex; align-items:stretch; }
+.hum-precip-col { flex:1; text-align:center; }
+.hum-precip-divider { width:0.5px; background:rgba(0,0,0,0.1); margin:2px 0; }
+body.is-night .hum-precip-divider { background:rgba(255,255,255,0.12); }
+.hum-precip-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-primary); opacity:0.75; margin-bottom:8px; }
+.hum-precip-value { font-size:26px; font-weight:200; color:var(--text-primary); }
 
 /* RESUMEN IA + ROPA */
 .ai-block { display:flex; flex-direction:column; gap:14px; }
@@ -88,13 +96,17 @@ body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
 .outfit-time { font-size:11px; color:var(--text-tertiary); font-weight:500; }
 .outfit-temp { font-size:13px; font-weight:300; color:var(--text-primary); }
 
-/* VIENTO — centrado */
+/* VIENTO — dos columnas: brújula | datos */
 .wind-center { display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px; }
+.wind-columns { display:flex; align-items:center; width:100%; }
+.wind-col { flex:1; display:flex; align-items:center; justify-content:center; }
+.wind-col-divider { width:0.5px; background:rgba(0,0,0,0.1); align-self:stretch; margin:4px 0; }
+body.is-night .wind-col-divider { background:rgba(255,255,255,0.12); }
 .wind-top { display:flex; flex-direction:column; align-items:center; gap:4px; }
 .wind-direction-label { font-size:13px; font-weight:500; letter-spacing:0.05em; color:var(--text-secondary); min-height:18px; }
-.wind-speed-big { font-size:56px; font-weight:100; letter-spacing:-0.03em; line-height:1; color:var(--text-primary); }
+.wind-speed-big { font-size:44px; font-weight:100; letter-spacing:-0.03em; line-height:1; color:var(--text-primary); }
 .wind-unit { font-size:12px; color:var(--text-tertiary); margin-top:2px; }
-.compass-wrap { position:relative; width:90px; height:90px; }
+.compass-wrap { position:relative; width:80px; height:80px; }
 .compass-wrap svg { width:100%; height:100%; }
 .wind-effect-text { font-size:12px; color:var(--text-tertiary); line-height:1.5; padding:6px 0; width:100%; text-align:center; }
 
@@ -109,15 +121,18 @@ body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
 .hourly-wind-spd { font-size:10px; color:var(--text-tertiary); }
 
 /* SEMANAL */
-.daily-item { display:flex; align-items:center; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.06); }
+.daily-item { display:flex; align-items:center; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.06); gap:8px; }
 body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
 .daily-item:last-child { border-bottom:none; }
-.daily-day { font-size:14px; font-weight:400; color:var(--text-secondary); width:40px; flex-shrink:0; }
+.daily-day { font-size:14px; font-weight:400; color:var(--text-secondary); width:34px; flex-shrink:0; }
 .daily-day.today { font-weight:600; color:var(--text-primary); }
-.daily-icon-wrap { flex:1; display:flex; justify-content:center; }
-.daily-temps { display:flex; gap:8px; font-size:14px; font-weight:300; }
-.daily-max { color:var(--text-primary); font-weight:500; }
-.daily-min { color:var(--text-tertiary); }
+.daily-icon-wrap { flex-shrink:0; width:24px; display:flex; justify-content:center; }
+.daily-min-label { font-size:12px; color:var(--text-tertiary); width:22px; flex-shrink:0; }
+.daily-bar-track { flex:1; height:5px; border-radius:3px; background:rgba(0,0,0,0.08); position:relative; }
+body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
+.daily-bar-fill { position:absolute; top:0; height:5px; border-radius:3px; }
+.daily-temps { display:flex; gap:8px; font-size:14px; font-weight:300; flex-shrink:0; }
+.daily-max { color:var(--text-primary); font-weight:500; width:26px; text-align:right; }
 
 /* LOADING */
 .loading-screen { position:fixed; inset:0; background:linear-gradient(160deg,#EEF2F7 0%,#C8D8E8 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; z-index:100; transition:opacity 0.6s ease; }
@@ -236,6 +251,7 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
 .hero-hour-time { font-size: 11px; color: var(--text-tertiary); font-weight: 500; }
 .hero-hour-temp { font-size: 17px; font-weight: 200; color: var(--text-primary); }
 .hero-hour-feel { font-size: 10px; color: var(--text-tertiary); }
+.hero-hour-rain { font-size: 10px; color: var(--text-tertiary); opacity: 0.7; }
 </style>
 </head>
 <body>
@@ -288,6 +304,7 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
       <!-- Página 1: temperatura actual -->
       <div class="hero-page">
         <div class="hero">
+          <div class="hero-city" id="hero-city">—</div>
           <div class="temp-row">
             <span class="temp-value" id="temp-value">—</span>
             <span class="temp-unit">°C</span>
@@ -316,6 +333,21 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
     </div>
   </div>
 
+  <!-- HUMEDAD · PRECIPITACIÓN -->
+  <div class="card hum-precip-card">
+    <div class="hum-precip-row">
+      <div class="hum-precip-col">
+        <div class="hum-precip-label">Humedad</div>
+        <div class="hum-precip-value" id="humidity-value">—%</div>
+      </div>
+      <div class="hum-precip-divider"></div>
+      <div class="hum-precip-col">
+        <div class="hum-precip-label">Precipitación</div>
+        <div class="hum-precip-value" id="precip-value">—%</div>
+      </div>
+    </div>
+  </div>
+
   <!-- RESUMEN IA + ROPA -->
   <div class="card">
     <div class="card-label">Resumen del día</div>
@@ -329,39 +361,46 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
   <div class="card">
     <div class="card-label">Viento</div>
     <div class="wind-center">
-      <div class="wind-top">
-        <div class="wind-direction-label" id="wind-dir-label">—</div>
-        <div class="wind-speed-big" id="wind-speed">—</div>
-        <div class="wind-unit">km/h</div>
-      </div>
-      <div class="compass-wrap">
-        <svg viewBox="0 0 90 90" id="compass-svg">
-          <circle cx="45" cy="45" r="41" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.12"/>
-          <!-- marcas de grados cada 30° -->
-          <g opacity="0.15" stroke="currentColor" stroke-width="0.8">
-            <line x1="45" y1="5" x2="45" y2="11"/>
-            <line x1="45" y1="79" x2="45" y2="85"/>
-            <line x1="5" y1="45" x2="11" y2="45"/>
-            <line x1="79" y1="45" x2="85" y2="45"/>
-            <line x1="16.5" y1="16.5" x2="20.7" y2="20.7"/>
-            <line x1="69.3" y1="69.3" x2="73.5" y2="73.5"/>
-            <line x1="73.5" y1="16.5" x2="69.3" y2="20.7"/>
-            <line x1="20.7" y1="69.3" x2="16.5" y2="73.5"/>
-          </g>
-          <text x="45" y="13" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">N</text>
-          <text x="45" y="83" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">S</text>
-          <text x="8"  y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">O</text>
-          <text x="82" y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">E</text>
-          <!-- aguja animada -->
-          <g id="compass-needle" transform="rotate(0 45 45)">
-            <!-- norte: punta oscura -->
-            <polygon points="45,18 48,45 45,52 42,45" fill="currentColor" opacity="0.88"/>
-            <!-- sur: cola clara -->
-            <polygon points="45,72 48,45 45,52 42,45" fill="currentColor" opacity="0.18"/>
-            <!-- punto central -->
-            <circle cx="45" cy="45" r="2.5" fill="currentColor" opacity="0.3"/>
-          </g>
-        </svg>
+      <div class="wind-columns">
+        <div class="wind-col">
+          <div class="compass-wrap">
+            <svg viewBox="0 0 90 90" id="compass-svg">
+              <circle cx="45" cy="45" r="41" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.12"/>
+              <!-- marcas de grados cada 30° -->
+              <g opacity="0.15" stroke="currentColor" stroke-width="0.8">
+                <line x1="45" y1="5" x2="45" y2="11"/>
+                <line x1="45" y1="79" x2="45" y2="85"/>
+                <line x1="5" y1="45" x2="11" y2="45"/>
+                <line x1="79" y1="45" x2="85" y2="45"/>
+                <line x1="16.5" y1="16.5" x2="20.7" y2="20.7"/>
+                <line x1="69.3" y1="69.3" x2="73.5" y2="73.5"/>
+                <line x1="73.5" y1="16.5" x2="69.3" y2="20.7"/>
+                <line x1="20.7" y1="69.3" x2="16.5" y2="73.5"/>
+              </g>
+              <text x="45" y="13" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">N</text>
+              <text x="45" y="83" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">S</text>
+              <text x="8"  y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">O</text>
+              <text x="82" y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">E</text>
+              <!-- aguja animada -->
+              <g id="compass-needle" transform="rotate(0 45 45)">
+                <!-- norte: punta oscura -->
+                <polygon points="45,18 48,45 45,52 42,45" fill="currentColor" opacity="0.88"/>
+                <!-- sur: cola clara -->
+                <polygon points="45,72 48,45 45,52 42,45" fill="currentColor" opacity="0.18"/>
+                <!-- punto central -->
+                <circle cx="45" cy="45" r="2.5" fill="currentColor" opacity="0.3"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="wind-col-divider"></div>
+        <div class="wind-col">
+          <div class="wind-top">
+            <div class="wind-direction-label" id="wind-dir-label">—</div>
+            <div class="wind-speed-big" id="wind-speed">—</div>
+            <div class="wind-unit">km/h</div>
+          </div>
+        </div>
       </div>
       <div class="wind-effect-text" id="wind-effect">—</div>
     </div>
@@ -1112,8 +1151,8 @@ async function reverseGeocode(lat,lon) {
 // ═══════════════════════════════════════════
 async function fetchWeather(lat,lon) {
   const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
-    +`&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day`
-    +`&hourly=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m`
+    +`&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day,relative_humidity_2m`
+    +`&hourly=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation_probability`
     +`&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_direction_10m_dominant`
     +`&timezone=auto&forecast_days=7`;
   return (await fetch(url)).json();
@@ -1152,7 +1191,7 @@ async function fetchAISummary(data, city) {
   const userContext = localStorage.getItem('user_context') || '';
 
   const prompt=`Eres un meteorólogo español que escribe el resumen diario de una app del tiempo personal, hecha a medida para una sola persona. Responde SOLO en JSON válido, sin texto extra ni markdown. Formato exacto:
-{"resumen":"MÁXIMO 2-3 frases, sin excepción. Dirígete directamente a ${userName || 'el usuario'} por su nombre. Da temperatura, viento y previsión del día de forma concreta. Añade una recomendación práctica SOLO si hay algo accionable que la combinación de lugar, condiciones y contexto de fondo (si existe) justifique de verdad — si no hay nada específico que añadir, no fuerces una frase de relleno tipo 'lleva paraguas'. Es un RESUMEN: breve, directo, cercano, nunca un parte meteorológico largo."}
+{"resumen":"4-5 frases. Dirígete directamente a ${userName || 'el usuario'} por su nombre. Incluye de forma explícita: temperatura actual, sensación térmica, máxima prevista, condición del cielo (despejado/nuboso/etc.), y viento con su cifra exacta y dirección. Cierra con una recomendación práctica ligada a la combinación real de lugar, condiciones y contexto de fondo (si existe) — solo si aporta algo específico, no genérica. Tono directo y cercano, como un parte meteorológico completo pero personal, no telegráfico."}
 
 UBICACIÓN ACTUAL (dato de GPS en tiempo real, es la única verdad sobre dónde está ahora mismo): ${city}.
 ${userContext ? `CONTEXTO DE FONDO sobre ${userName || 'la persona'} (información general de su vida, rutinas o lugares donde suele estar en otras épocas — NO asumas que es donde está ahora mismo, solo úsalo si es coherente con la ubicación actual de arriba): ${userContext}.` : ''}
@@ -1219,6 +1258,7 @@ function renderWeather(data, city) {
 
   const userName = localStorage.getItem('user_name');
   document.getElementById('location-name').textContent = userName ? `${userName.toUpperCase()} · ${city.toUpperCase()}` : city.toUpperCase();
+  document.getElementById('hero-city').textContent = city.toUpperCase();
   document.getElementById('last-updated').textContent='Ahora';
   document.getElementById('temp-value').textContent=Math.round(c.temperature_2m);
   document.getElementById('condition-icon-svg').innerHTML=wmoIcon(c.weather_code,!isNight).replace('width="28"','width="32"').replace('height="28"','height="32"');
@@ -1226,6 +1266,12 @@ function renderWeather(data, city) {
   document.getElementById('feels-like').textContent=Math.round(c.apparent_temperature);
   document.getElementById('temp-max').textContent=Math.round(daily.temperature_2m_max[0]);
   document.getElementById('temp-min').textContent=Math.round(daily.temperature_2m_min[0]);
+
+  // Humedad · Precipitación
+  const nowHourIdx=new Date().getHours();
+  document.getElementById('humidity-value').textContent = (c.relative_humidity_2m ?? '—') + '%';
+  const precipNow = hourly.precipitation_probability?.[nowHourIdx];
+  document.getElementById('precip-value').textContent = (precipNow ?? 0) + '%';
 
   // Viento
   const wDir=c.wind_direction_10m, wSpd=Math.round(c.wind_speed_10m);
@@ -1242,14 +1288,23 @@ function renderWeather(data, city) {
   const todayDow=new Date().getDay();
   const dailyEl=document.getElementById('daily-list');
   dailyEl.innerHTML='';
-  for (let i=0;i<Math.min(7,daily.weather_code.length);i++) {
+  const nDays=Math.min(7,daily.weather_code.length);
+  const weekMin=Math.min(...daily.temperature_2m_min.slice(0,nDays));
+  const weekMax=Math.max(...daily.temperature_2m_max.slice(0,nDays));
+  const weekRange=Math.max(1, weekMax-weekMin);
+  for (let i=0;i<nDays;i++) {
     const dow=(todayDow+i)%7;
+    const dMin=daily.temperature_2m_min[i], dMax=daily.temperature_2m_max[i];
+    const leftPct=((dMin-weekMin)/weekRange)*100;
+    const widthPct=((dMax-dMin)/weekRange)*100;
     const div=document.createElement('div');
     div.className='daily-item';
     div.innerHTML=`
       <div class="daily-day ${i===0?'today':''}">${i===0?'Hoy':days[dow]}</div>
-      <div class="daily-icon-wrap">${wmoIcon(daily.weather_code[i],true).replace('width="28"','width="26"').replace('height="28"','height="26"')}</div>
-      <div class="daily-temps"><span class="daily-max">${Math.round(daily.temperature_2m_max[i])}°</span><span class="daily-min">${Math.round(daily.temperature_2m_min[i])}°</span></div>`;
+      <div class="daily-icon-wrap">${wmoIcon(daily.weather_code[i],true).replace('width="28"','width="18"').replace('height="28"','height="18"')}</div>
+      <div class="daily-min-label">${Math.round(dMin)}°</div>
+      <div class="daily-bar-track"><div class="daily-bar-fill" style="left:${leftPct.toFixed(1)}%;width:${widthPct.toFixed(1)}%;background:linear-gradient(90deg,#FFD166,#FF8C42);"></div></div>
+      <div class="daily-temps"><span class="daily-max">${Math.round(dMax)}°</span></div>`;
     dailyEl.appendChild(div);
   }
 
@@ -1504,7 +1559,8 @@ function renderHeroHourly(hourly, nowHour, isNight) {
       <div class="hero-hour-time">${i === 0 ? 'Ahora' : h + 'h'}</div>
       ${iconH}
       <div class="hero-hour-temp">${Math.round(hourly.temperature_2m[idx])}°</div>
-      <div class="hero-hour-feel">${Math.round(hourly.apparent_temperature[idx])}°</div>`;
+      <div class="hero-hour-feel">${Math.round(hourly.apparent_temperature[idx])}°</div>
+      <div class="hero-hour-rain">${Math.round(hourly.precipitation_probability?.[idx] ?? 0)}%</div>`;
     el.appendChild(div);
   }
 }

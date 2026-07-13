@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Tiempo">
 <title>Tiempo</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 :root {
@@ -18,7 +18,7 @@
   --card-border:rgba(255,255,255,0.72); --stroke:rgba(26,26,46,0.75);
 }
 body {
-  font-family:'Nunito',-apple-system,sans-serif;
+  font-family:'Inter',-apple-system,sans-serif;
   min-height:100vh; min-height:-webkit-fill-available;
   overflow-x:hidden;
   background:
@@ -148,15 +148,15 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
 .api-key-screen { position:fixed; inset:0; background:linear-gradient(160deg,#EEF2F7 0%,#C8D8E8 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; z-index:200; padding:32px; }
 .api-key-screen h2 { font-size:20px; font-weight:300; color:rgba(26,26,46,0.8); text-align:center; }
 .api-key-screen p { font-size:13px; color:rgba(26,26,46,0.45); text-align:center; line-height:1.6; max-width:280px; }
-.api-key-input { width:100%; max-width:340px; padding:14px 18px; border:1px solid rgba(26,26,46,0.15); border-radius:14px; font-family:'Nunito',sans-serif; font-size:13px; background:rgba(255,255,255,0.7); color:rgba(26,26,46,0.8); outline:none; text-align:center; }
+.api-key-input { width:100%; max-width:340px; padding:14px 18px; border:1px solid rgba(26,26,46,0.15); border-radius:14px; font-family:'Inter',sans-serif; font-size:13px; background:rgba(255,255,255,0.7); color:rgba(26,26,46,0.8); outline:none; text-align:center; }
 .api-key-input:focus { border-color:rgba(26,26,46,0.3); }
 .api-key-field-wrap { position:relative; width:100%; max-width:340px; }
 .api-key-field-wrap .api-key-input { max-width:none; padding-right:44px; text-align:left; }
 .api-key-eye-btn { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; font-size:16px; opacity:0.5; cursor:pointer; padding:4px; line-height:1; }
 .api-key-copy-link { font-size:12px; color:rgba(26,26,46,0.45); cursor:pointer; text-decoration:underline; margin-top:-8px; }
-.api-key-btn { padding:14px 32px; background:rgba(26,26,46,0.85); color:white; border:none; border-radius:14px; font-family:'Nunito',sans-serif; font-size:14px; font-weight:500; cursor:pointer; }
+.api-key-btn { padding:14px 32px; background:rgba(26,26,46,0.85); color:white; border:none; border-radius:14px; font-family:'Inter',sans-serif; font-size:14px; font-weight:500; cursor:pointer; }
 .api-key-skip { font-size:12px; color:rgba(26,26,46,0.35); cursor:pointer; text-decoration:underline; }
-.settings-textarea { width:100%; max-width:340px; padding:14px 18px; border:1px solid rgba(26,26,46,0.15); border-radius:14px; font-family:'Nunito',sans-serif; font-size:13px; background:rgba(255,255,255,0.7); color:rgba(26,26,46,0.8); outline:none; resize:none; min-height:20px; line-height:1.5; }
+.settings-textarea { width:100%; max-width:340px; padding:14px 18px; border:1px solid rgba(26,26,46,0.15); border-radius:14px; font-family:'Inter',sans-serif; font-size:13px; background:rgba(255,255,255,0.7); color:rgba(26,26,46,0.8); outline:none; resize:none; min-height:20px; line-height:1.5; }
 .settings-textarea:focus { border-color:rgba(26,26,46,0.3); }
 .settings-field-label { width:100%; max-width:340px; font-size:11px; color:rgba(26,26,46,0.4); text-align:left; margin:-10px 0 -8px 2px; }
 
@@ -319,12 +319,12 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
           <div class="hero-icon-big" id="hero-icon-big"></div>
           <div class="temp-row">
             <span class="temp-value" id="temp-value">—</span>
-            <span class="temp-unit">°C</span>
+            <span class="temp-unit">°</span>
           </div>
           <div class="condition-row">
             <span class="condition-text" id="condition-text">—</span>
           </div>
-          <div class="feels-row">Sensación <span id="feels-like">—</span>°C</div>
+          <div class="feels-row">Sensación <span id="feels-like">—</span>°</div>
           <div class="minmax-row">
             <span>↑ <b id="temp-max">—</b>°</span>
             <span>↓ <b id="temp-min">—</b>°</span>
@@ -388,10 +388,10 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
                 <line x1="73.5" y1="16.5" x2="69.3" y2="20.7"/>
                 <line x1="20.7" y1="69.3" x2="16.5" y2="73.5"/>
               </g>
-              <text x="45" y="13" text-anchor="middle" font-size="7.5" font-family="Nunito" fill="currentColor" opacity="0.38" font-weight="500">N</text>
-              <text x="45" y="83" text-anchor="middle" font-size="7.5" font-family="Nunito" fill="currentColor" opacity="0.38" font-weight="500">S</text>
-              <text x="8"  y="48" text-anchor="middle" font-size="7.5" font-family="Nunito" fill="currentColor" opacity="0.38" font-weight="500">O</text>
-              <text x="82" y="48" text-anchor="middle" font-size="7.5" font-family="Nunito" fill="currentColor" opacity="0.38" font-weight="500">E</text>
+              <text x="45" y="13" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">N</text>
+              <text x="45" y="83" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">S</text>
+              <text x="8"  y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">O</text>
+              <text x="82" y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">E</text>
               <!-- aguja animada -->
               <g id="compass-needle" transform="rotate(0 45 45)">
                 <!-- norte: punta oscura -->
@@ -457,7 +457,7 @@ const ICONS = {
 };
 
 const CLOTHES = {
-  camiseta: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="-39.5 -30.0 555.0 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="34">
+  camiseta: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="-39.5 -30.0 555.0 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="22">
   <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
   
   <g>
@@ -538,7 +538,7 @@ const CLOTHES = {
     
   </g>
 </svg>`,
-  jersey: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="848.0 -30.0 526.5 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="34">
+  jersey: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="848.0 -30.0 526.5 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="22">
   <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
   
   <g>
@@ -619,7 +619,7 @@ const CLOTHES = {
     
   </g>
 </svg>`,
-  sudadera: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="1745.0 -30.0 479.6 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="34">
+  sudadera: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="1745.0 -30.0 479.6 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="22">
   <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
   
   <g>
@@ -700,7 +700,7 @@ const CLOTHES = {
     
   </g>
 </svg>`,
-  chaqueta: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="2602.1 -30.0 501.5 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="34">
+  chaqueta: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="2602.1 -30.0 501.5 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="22">
   <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
   
   <g>
@@ -781,7 +781,7 @@ const CLOTHES = {
     
   </g>
 </svg>`,
-  plumas: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="3514.1 -30.0 435.5 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="34">
+  plumas: `<svg width="110" height="110" xmlns="http://www.w3.org/2000/svg" viewBox="3514.1 -30.0 435.5 450.0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="22">
   <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
   
   <g>

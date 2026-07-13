@@ -13,8 +13,8 @@
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 :root {
   --bg-c1:#FF8C42; --bg-c2:#FFD166; --bg-white:#FAFAF8;
-  --text-primary:#1a1a2e; --text-secondary:rgba(26,26,46,0.55);
-  --text-tertiary:rgba(26,26,46,0.32); --card-bg:rgba(255,255,255,0.48);
+  --text-primary:#1a1a2e; --text-secondary:#1a1a2e;
+  --text-tertiary:#1a1a2e; --card-bg:rgba(255,255,255,0.48);
   --card-border:rgba(255,255,255,0.72); --stroke:rgba(26,26,46,0.75);
 }
 body {
@@ -28,8 +28,8 @@ body {
   transition:background 1.4s ease; color:var(--text-primary);
 }
 body.is-night {
-  --text-primary:rgba(235,242,255,0.95); --text-secondary:rgba(235,242,255,0.52);
-  --text-tertiary:rgba(235,242,255,0.28); --stroke:rgba(235,242,255,0.8);
+  --text-primary:rgba(235,242,255,0.95); --text-secondary:rgba(235,242,255,0.95);
+  --text-tertiary:rgba(235,242,255,0.95); --stroke:rgba(235,242,255,0.8);
   background: radial-gradient(ellipse 130% 60% at 25% -10%, var(--bg-c1) 0%, var(--bg-c1) 25%, transparent 65%), radial-gradient(ellipse 90% 50% at 90% 0%, var(--bg-c2) 0%, var(--bg-c2) 20%, transparent 60%), var(--bg-white);
 }
 #stars-canvas { position:fixed; inset:0; pointer-events:none; opacity:0; transition:opacity 1.8s ease; z-index:0; }
@@ -57,10 +57,10 @@ body.is-night #stars-canvas { opacity:1; }
 .hero-icon-big { width:80px; height:80px; margin:6px 0 2px; color:var(--text-primary); }
 .hero-icon-big svg { width:100%; height:100%; }
 .temp-row { display:flex; align-items:flex-start; line-height:1; }
-.temp-value { font-size:clamp(100px,27vw,124px); font-weight:200 !important; letter-spacing:-0.04em; color:var(--text-primary); line-height:0.88; }
-.temp-unit { font-size:clamp(34px,9vw,46px); font-weight:200; color:var(--text-primary); margin-top:12px; margin-left:3px; opacity:0.7; }
+.temp-value { font-size:clamp(100px,27vw,124px); font-weight:400 !important; letter-spacing:-0.04em; color:var(--text-primary); line-height:0.88; }
+.temp-unit { font-size:clamp(34px,9vw,46px); font-weight:400; color:var(--text-primary); margin-top:12px; margin-left:3px; opacity:0.7; }
 .condition-row { margin-top:16px; display:flex; align-items:center; justify-content:center; gap:10px; }
-.condition-text { font-size:20px; font-weight:200; color:var(--text-secondary); letter-spacing:-0.01em; }
+.condition-text { font-size:20px; font-weight:500; color:var(--text-secondary); letter-spacing:-0.01em; }
 .feels-row { margin-top:9px; font-size:13px; color:var(--text-tertiary); }
 .feels-row span { color:var(--text-secondary); font-weight:500; }
 .minmax-row { margin-top:5px; font-size:13px; color:var(--text-tertiary); display:flex; gap:14px; justify-content:center; }
@@ -69,18 +69,18 @@ body.is-night #stars-canvas { opacity:1; }
 /* CARDS */
 .card { background:transparent; border:none; border-top:1px solid rgba(0,0,0,0.08); border-radius:0; padding:20px 0; backdrop-filter:none; -webkit-backdrop-filter:none; margin-bottom:0; }
 body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
-.card-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-primary); margin-bottom:16px; text-align:center; opacity:0.75; }
+.card-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-primary); margin-bottom:16px; text-align:center; }
 .hum-precip-card { padding:16px 0; }
 .hum-precip-row { display:flex; align-items:stretch; }
 .hum-precip-col { flex:1; text-align:center; }
 .hum-precip-divider { width:0.5px; background:rgba(0,0,0,0.1); margin:2px 0; }
 body.is-night .hum-precip-divider { background:rgba(255,255,255,0.12); }
-.hum-precip-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-primary); opacity:0.75; margin-bottom:8px; }
-.hum-precip-value { font-size:26px; font-weight:200; color:var(--text-primary); }
+.hum-precip-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-primary); margin-bottom:8px; }
+.hum-precip-value { font-size:26px; font-weight:400; color:var(--text-primary); }
 
 /* RESUMEN IA + ROPA */
 .ai-block { display:flex; flex-direction:column; gap:14px; }
-.ai-summary { font-size:14px; font-weight:300; line-height:1.65; color:var(--text-secondary); text-align:center; }
+.ai-summary { font-size:14px; font-weight:400; line-height:1.65; color:var(--text-secondary); text-align:center; }
 .ai-summary.loading { color:var(--text-tertiary); font-style:italic; }
 .clothes-block { border-top:none; padding-top:8px; display:flex; flex-direction:column; align-items:center; gap:8px; }
 .clothes-icon-wrap { display:flex; align-items:center; justify-content:center; width:110px; height:110px; }
@@ -96,7 +96,7 @@ body.is-night .hum-precip-divider { background:rgba(255,255,255,0.12); }
 .outfit-item { display:flex; flex-direction:column; align-items:center; gap:4px; width:62px; min-width:62px; max-width:62px; padding:8px 0; border-radius:10px; flex-shrink:0; overflow:hidden; box-sizing:border-box; }
 .outfit-item.current { background:var(--accent-color,rgba(255,140,66,0.18)); border-radius:10px; }
 .outfit-time { font-size:11px; color:var(--text-tertiary); font-weight:500; }
-.outfit-temp { font-size:13px; font-weight:300; color:var(--text-primary); }
+.outfit-temp { font-size:13px; font-weight:400; color:var(--text-primary); }
 
 /* VIENTO — dos columnas: brújula | datos */
 .wind-center { display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px; }
@@ -106,7 +106,7 @@ body.is-night .hum-precip-divider { background:rgba(255,255,255,0.12); }
 body.is-night .wind-col-divider { background:rgba(255,255,255,0.12); }
 .wind-top { display:flex; flex-direction:column; align-items:center; gap:4px; }
 .wind-direction-label { font-size:13px; font-weight:500; letter-spacing:0.05em; color:var(--text-secondary); min-height:18px; }
-.wind-speed-big { font-size:44px; font-weight:100; letter-spacing:-0.03em; line-height:1; color:var(--text-primary); }
+.wind-speed-big { font-size:44px; font-weight:400; letter-spacing:-0.03em; line-height:1; color:var(--text-primary); }
 .wind-unit { font-size:12px; color:var(--text-tertiary); margin-top:2px; }
 .compass-wrap { position:relative; width:80px; height:80px; }
 .compass-wrap svg { width:100%; height:100%; }
@@ -118,7 +118,7 @@ body.is-night .wind-col-divider { background:rgba(255,255,255,0.12); }
 .hourly-item { display:flex; flex-direction:column; align-items:center; gap:4px; width:62px; min-width:62px; max-width:62px; padding:10px 0; border-radius:12px; flex-shrink:0; box-sizing:border-box; }
 .hourly-item.current { background:var(--accent-color,rgba(255,140,66,0.18)); border-radius:10px; }
 .hourly-time { font-size:11px; color:var(--text-tertiary); font-weight:500; }
-.hourly-temp { font-size:15px; font-weight:300; color:var(--text-primary); }
+.hourly-temp { font-size:15px; font-weight:400; color:var(--text-primary); }
 .hourly-wind-row { display:flex; align-items:center; gap:3px; }
 .hourly-wind-spd { font-size:10px; color:var(--text-tertiary); }
 
@@ -133,7 +133,7 @@ body.is-night .daily-item { border-color:rgba(255,255,255,0.08); }
 .daily-bar-track { flex:1; height:5px; border-radius:3px; background:rgba(0,0,0,0.08); position:relative; }
 body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
 .daily-bar-fill { position:absolute; top:0; height:5px; border-radius:3px; }
-.daily-temps { display:flex; gap:8px; font-size:14px; font-weight:300; flex-shrink:0; }
+.daily-temps { display:flex; gap:8px; font-size:14px; font-weight:500; flex-shrink:0; }
 .daily-max { color:var(--text-primary); font-weight:500; width:26px; text-align:right; }
 
 /* LOADING */
@@ -255,7 +255,7 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
   border-radius: 12px;
 }
 .hero-hour-time { font-size: 11px; color: var(--text-tertiary); font-weight: 500; }
-.hero-hour-temp { font-size: 17px; font-weight: 200; color: var(--text-primary); }
+.hero-hour-temp { font-size: 17px; font-weight: 400; color: var(--text-primary); }
 .hero-hour-feel { font-size: 10px; color: var(--text-tertiary); }
 .hero-hour-rain { font-size: 10px; color: var(--text-tertiary); opacity: 0.7; }
 </style>
@@ -441,97 +441,18 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
 // ICONOS SVG — estilo línea fina tipo Weat
 // ═══════════════════════════════════════════
 const ICONS = {
-  sun: `<svg width="28" height="28" viewBox="72.7 72.7 137.6 137.6" fill="currentColor"><g>
-    <path d="M141.7,170.5c-16.1,0-29.2-13.1-29.2-29.2s13.1-29.2,29.2-29.2,29.2,13.1,29.2,29.2-13.1,29.2-29.2,29.2ZM141.7,117.1c-13.3,0-24.2,10.8-24.2,24.2s10.8,24.2,24.2,24.2,24.2-10.8,24.2-24.2-10.8-24.2-24.2-24.2Z"/>
-    <path d="M141.7,104c-1.4,0-2.5-1.1-2.5-2.5v-12.8c0-1.4,1.1-2.5,2.5-2.5s2.5,1.1,2.5,2.5v12.8c0,1.4-1.1,2.5-2.5,2.5Z"/>
-    <path d="M113.6,115.6c-.6,0-1.3-.2-1.8-.7l-9.1-9.1c-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8c1-1,2.6-1,3.5,0l9.1,9.1c.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8c-.5.5-1.1.7-1.8.7Z"/>
-    <path d="M101.9,143.8h-12.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h12.8c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-    <path d="M104.5,181c-.6,0-1.3-.2-1.8-.7-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8l9.1-9.1c1-1,2.6-1,3.5,0,.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8l-4.5,4.5h0l-4.5,4.5c-.5.5-1.1.7-1.8.7Z"/>
-    <path d="M141.7,196.5c-1.4,0-2.5-1.1-2.5-2.5v-12.8c0-1.4,1.1-2.5,2.5-2.5s2.5,1.1,2.5,2.5v12.8c0,1.4-1.1,2.5-2.5,2.5Z"/>
-    <path d="M179,181c-.6,0-1.3-.2-1.8-.7l-9.1-9.1c-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8c1-1,2.6-1,3.5,0l9.1,9.1c.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8c-.5.5-1.1.7-1.8.7Z"/>
-    <path d="M194.4,143.8h-12.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h12.8c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-    <path d="M169.9,115.6c-.6,0-1.3-.2-1.8-.7-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8l4.5-4.5h0l4.5-4.5c1-1,2.6-1,3.5,0,.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8l-9.1,9.1c-.5.5-1.1.7-1.8.7Z"/>
-  </g></svg>`,
-  moon: `<svg width="28" height="28" viewBox="394.1 80.1 105.8 122.8" fill="currentColor"><path d="M455.5,190.2c-27,0-48.9-22-48.9-48.9s22-48.9,48.9-48.9,5.1.2,7.7.6c1,.2,1.8.9,2,1.8s0,2-.8,2.6c-9.8,8.4-15.5,20.6-15.5,33.5,0,21.8,15.6,40,37,43.4,1,.2,1.8.9,2,1.8s0,2-.8,2.6c-8.8,7.5-20.1,11.7-31.7,11.7ZM455.5,97.4c-24.2,0-43.9,19.7-43.9,43.9s19.7,43.9,43.9,43.9,17.1-2.6,24.2-7.3c-21-5.8-35.8-24.8-35.8-47.2s4.7-24.4,13.2-33.4c-.5,0-1.1,0-1.6,0Z"/></svg>`,
-  cloudsun: `<svg width="28" height="28" viewBox="662.5 66.5 181.0 149.0" fill="currentColor"><g>
-    <path d="M767.8,198h-62.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9ZM723.9,127.5c-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8l.2,2.1-2,.5c-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9h62.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5l-1.5-.3-.4-1.5c-2-7.8-9.1-13.3-17.2-13.3s-4.3.4-6.4,1.2l-2,.8-1.1-1.9c-3.9-6.9-11.3-11.1-19.2-11.1Z"/>
-    <g>
-      <path d="M791.7,154.4c-.5,0-1.1-.2-1.5-.5-1.1-.9-1.3-2.4-.4-3.5,3-3.8,4.6-8.4,4.6-13.3,0-11.9-9.6-21.5-21.5-21.5s-15,4.2-18.8,11.1c-.7,1.2-2.2,1.6-3.4,1-1.2-.7-1.6-2.2-1-3.4,4.7-8.4,13.6-13.6,23.2-13.6,14.6,0,26.5,11.9,26.5,26.5s-1.9,11.6-5.6,16.3c-.5.6-1.2,1-2,1Z"/>
-      <path d="M772.8,100.7c-1.4,0-2.5-1.1-2.5-2.5v-11.1c0-1.4,1.1-2.5,2.5-2.5s2.5,1.1,2.5,2.5v11.1c0,1.4-1.1,2.5-2.5,2.5Z"/>
-      <path d="M745.3,112.1c-.6,0-1.3-.2-1.8-.7l-7.8-7.8c-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8c1-1,2.6-1,3.5,0l7.8,7.8c.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8c-.5.5-1.1.7-1.8.7Z"/>
-      <path d="M808.2,175c-.6,0-1.3-.2-1.8-.7l-7.8-7.8c-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8c1-1,2.6-1,3.5,0l7.8,7.8c.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8c-.5.5-1.1.7-1.8.7Z"/>
-      <path d="M822.8,139.6h-11.1c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h11.1c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-      <path d="M800.4,112.1c-.6,0-1.3-.2-1.8-.7-.5-.5-.7-1.1-.7-1.8s.2-1.3.7-1.8l7.8-7.8c1-1,2.6-1,3.5,0,.5.5.7,1.1.7,1.8s-.2,1.3-.7,1.8l-3.9,3.9h0l-3.9,3.9c-.5.5-1.1.7-1.8.7Z"/>
-    </g>
-  </g></svg>`,
-  cloudmoon: `<svg width="28" height="28" viewBox="972.2 74.2 173.6 134.6" fill="currentColor"><g>
-    <path d="M1076.6,191.1h-62.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9ZM1032.6,120.6c-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8l.2,2.1-2,.5c-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9h62.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5l-1.5-.3-.4-1.5c-2-7.8-9.1-13.3-17.2-13.3s-4.4.4-6.4,1.2l-2,.8-1.1-1.9c-3.9-6.9-11.3-11.1-19.2-11.1Z"/>
-    <path d="M1109.3,161.6c-1,0-2-.6-2.3-1.6-.5-1.3.2-2.7,1.5-3.2,4.4-1.6,8.3-4.2,11.5-7.6-15.5-.7-29-11.2-33.3-26.6-2.3-8.4-1.5-17.3,2.2-25.1-10.7,3.1-19,11.7-21.7,22.6-.3,1.3-1.7,2.2-3,1.8-1.3-.3-2.2-1.7-1.8-3,3.2-12.7,13-22.8,25.6-26.3,1.8-.5,3.7-.9,5.6-1.1,1-.1,1.9.4,2.4,1.2.5.8.5,1.9,0,2.7-5.2,7.6-6.7,17-4.3,25.8,4.1,14.9,18.2,24.5,33.6,22.8,1-.1,1.9.4,2.4,1.2.5.8.5,1.9,0,2.7-4.2,6.2-10.2,10.9-17.2,13.5-.3.1-.6.2-.9.2Z"/>
-  </g></svg>`,
-  cloud: `<svg width="28" height="28" viewBox="65.3 501.3 141.4 103.4" fill="currentColor"><path d="M167.3,591h-62.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9ZM123.3,520.5c-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8l.2,2.1-2,.5c-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9h62.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5l-1.5-.3-.4-1.5c-2-7.8-9.1-13.3-17.2-13.3s-4.3.4-6.4,1.2l-2,.8-1.1-1.9c-3.9-6.9-11.3-11.1-19.2-11.1Z"/></svg>`,
-  fog: `<svg width="28" height="28" viewBox="381.2 497.2 121.5 112.5" fill="currentColor"><g>
-    <path d="M474.6,528h-73c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h73c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-    <g>
-      <path d="M460.6,514.1h-64.4c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h64.4c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-      <path d="M487.6,514.1h-16.4c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h16.4c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-    </g>
-    <path d="M471.2,555.7h-49.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h49.8c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-    <path d="M456.1,569.6h-39.3c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h39.3c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-    <path d="M450,583.5h-22.4c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h22.4c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-    <path d="M451.5,597.4h-11.2c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h11.2c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-    <g>
-      <path d="M469,541.8h-38c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h38c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-      <path d="M422,542h-10.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h10.8c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-    </g>
-  </g></svg>`,
-  drizzle: `<svg width="28" height="28" viewBox="677.4 490.4 140.1 126.1" fill="currentColor"><g>
-    <path d="M779,580c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5c-.9-.2-1.7-.9-1.9-1.8-2-7.8-9.1-13.3-17.2-13.3s-4.4.4-6.4,1.2c-1.2.5-2.5,0-3.1-1.1-3.9-6.9-11.3-11.1-19.2-11.1-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8c0,1.2-.7,2.3-1.8,2.6-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9,2.5,1.1,2.5,2.5-1.1,2.5-2.5,2.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9Z"/>
-    <g>
-      <path d="M726.4,582.9c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
-      <path d="M745.9,582.9c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
-      <path d="M765.5,582.9c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
-    </g>
-    <g>
-      <path d="M715.5,602c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
-      <path d="M735,602c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
-      <path d="M754.5,602c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l6.1-10.5c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-6.1,10.5c-.5.8-1.3,1.3-2.2,1.3Z"/>
-    </g>
-  </g></svg>`,
-  rain: `<svg width="28" height="28" viewBox="983.4 492.4 140.1 122.1" fill="currentColor"><g>
-    <path d="M1084.8,581.9c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5c-.9-.2-1.7-.9-1.9-1.8-2-7.8-9.1-13.3-17.2-13.3s-4.4.4-6.4,1.2c-1.2.4-2.5,0-3.1-1.1-3.9-6.9-11.3-11.1-19.2-11.1-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8c0,1.2-.7,2.3-1.8,2.6-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9,2.5,1.1,2.5,2.5-1.1,2.5-2.5,2.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9Z"/>
-    <g>
-      <path d="M1023.4,600.1c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l14.9-25.9c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-14.9,25.9c-.5.8-1.3,1.3-2.2,1.3Z"/>
-      <path d="M1042.9,600.1c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l14.9-25.9c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-14.9,25.9c-.5.8-1.3,1.3-2.2,1.3Z"/>
-      <path d="M1062.4,600.1c-.4,0-.9-.1-1.3-.3-1.2-.7-1.6-2.2-.9-3.4l14.9-25.9c.7-1.2,2.2-1.6,3.4-.9,1.2.7,1.6,2.2.9,3.4l-14.9,25.9c-.5.8-1.3,1.3-2.2,1.3Z"/>
-    </g>
-  </g></svg>`,
-  snow: `<svg width="28" height="28" viewBox="69.4 862.4 140.1 138.1" fill="currentColor"><g>
-    <path d="M170.8,952.1h-19.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h19.8c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5l-1.5-.3-.4-1.5c-2-7.8-9.1-13.3-17.2-13.3s-4.4.4-6.4,1.2l-2,.8-1.1-1.9c-3.9-6.9-11.3-11.1-19.2-11.1-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8l.2,2.1-2,.5c-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9h7.5c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5h-7.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9Z"/>
-    <path d="M133.3,958.9c-4.6,0-8.3-3.7-8.3-8.3s3.7-8.3,8.3-8.3,8.3,3.7,8.3,8.3-3.7,8.3-8.3,8.3ZM133.3,947.3c-1.8,0-3.3,1.5-3.3,3.3s1.5,3.3,3.3,3.3,3.3-1.5,3.3-3.3-1.5-3.3-3.3-3.3Z"/>
-    <path d="M164,973.7c-4.6,0-8.3-3.7-8.3-8.3s3.7-8.3,8.3-8.3,8.3,3.7,8.3,8.3-3.7,8.3-8.3,8.3ZM164,962.1c-1.8,0-3.3,1.5-3.3,3.3s1.5,3.3,3.3,3.3,3.3-1.5,3.3-3.3-1.5-3.3-3.3-3.3Z"/>
-    <path d="M114.2,974.7c-4.6,0-8.3-3.7-8.3-8.3s3.7-8.3,8.3-8.3,8.3,3.7,8.3,8.3-3.7,8.3-8.3,8.3ZM114.2,963.1c-1.8,0-3.3,1.5-3.3,3.3s1.5,3.3,3.3,3.3,3.3-1.5,3.3-3.3-1.5-3.3-3.3-3.3Z"/>
-    <path d="M141.1,986.2c-4.6,0-8.3-3.7-8.3-8.3s3.7-8.3,8.3-8.3,8.3,3.7,8.3,8.3-3.7,8.3-8.3,8.3ZM141.1,974.6c-1.8,0-3.3,1.5-3.3,3.3s1.5,3.3,3.3,3.3,3.3-1.5,3.3-3.3-1.5-3.3-3.3-3.3Z"/>
-  </g></svg>`,
-  storm: `<svg width="28" height="28" viewBox="376.3 865.3 141.4 131.4" fill="currentColor"><g>
-    <path d="M478.1,955.3c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5c-.9-.2-1.7-.9-1.9-1.8-2-7.8-9.1-13.3-17.2-13.3s-4.3.4-6.4,1.2c-1.2.5-2.5,0-3.1-1.1-3.9-6.9-11.3-11.1-19.2-11.1-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8c0,1.2-.7,2.3-1.8,2.6-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9,2.5,1.1,2.5,2.5-1.1,2.5-2.5,2.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9Z"/>
-    <path d="M438.6,983c-.3,0-.7,0-1-.2-1-.4-1.6-1.5-1.5-2.6l2.3-21.2h-9.4c-1,0-1.9-.6-2.3-1.4-.4-.9-.3-1.9.3-2.7l26.2-31.3c.7-.8,1.9-1.1,2.9-.7,1,.4,1.6,1.5,1.5,2.6l-2.3,21.2h9.4c1,0,1.9.6,2.3,1.4.4.9.3,1.9-.3,2.7l-26.2,31.3c-.5.6-1.2.9-1.9.9ZM434.3,954h6.8c.7,0,1.4.3,1.9.8.5.5.7,1.2.6,1.9l-1.7,15.7,17.5-20.9h-6.8c-.7,0-1.4-.3-1.9-.8-.5-.5-.7-1.2-.6-1.9l1.7-15.7-17.5,20.9Z"/>
-  </g></svg>`,
-  stormrain: `<svg width="28" height="28" viewBox="684.4 867.4 140.1 128.1" fill="currentColor"><g>
-    <path d="M785.5,956.8c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5c11,0,19.9-8.9,19.9-19.9s-6.7-17.7-16-19.5c-.9-.2-1.7-.9-1.9-1.8-2-7.8-9.1-13.3-17.2-13.3s-4.4.4-6.4,1.2c-1.2.4-2.5,0-3.1-1.1-3.9-6.9-11.3-11.1-19.2-11.1-12.2,0-22.1,9.9-22.1,22.1s0,1.1,0,1.8c0,1.2-.7,2.3-1.8,2.6-8.6,2.4-14.6,10.2-14.6,19.2s8.9,19.9,19.9,19.9,2.5,1.1,2.5,2.5-1.1,2.5-2.5,2.5c-13.7,0-24.9-11.2-24.9-24.9s6.6-19.8,16.4-23.4c0,0,0-.1,0-.2,0-14.9,12.1-27.1,27.1-27.1s17.4,4.5,22.4,11.9c2-.6,4.1-.9,6.3-.9,9.9,0,18.5,6.3,21.6,15.6,10.8,2.8,18.6,12.7,18.6,24.1s-11.2,24.9-24.9,24.9Z"/>
-    <path d="M745.9,981.4c-.3,0-.7,0-1-.2-1-.4-1.6-1.5-1.5-2.6l2.3-21.2h-9.4c-1,0-1.9-.6-2.3-1.4-.4-.9-.3-1.9.3-2.7l26.2-31.3c.7-.8,1.9-1.1,2.9-.7,1,.4,1.6,1.5,1.5,2.6l-2.3,21.2h9.4c1,0,1.9.6,2.3,1.4.4.9.3,1.9-.3,2.7l-26.2,31.3c-.5.6-1.2.9-1.9.9ZM741.6,952.5h6.8c.7,0,1.4.3,1.9.8.5.5.7,1.2.6,1.9l-1.7,15.7,17.5-20.9h-6.8c-.7,0-1.4-.3-1.9-.8-.5-.5-.7-1.2-.6-1.9l1.7-15.7-17.5,20.9Z"/>
-    <g>
-      <path d="M725.7,976.1c-.5,0-1-.1-1.4-.4-1.2-.8-1.5-2.3-.7-3.5l7.3-11c.8-1.2,2.3-1.5,3.5-.7,1.2.8,1.5,2.3.7,3.5l-7.3,11c-.5.7-1.3,1.1-2.1,1.1Z"/>
-      <path d="M710.5,976.1c-.5,0-1-.1-1.4-.4-1.2-.8-1.5-2.3-.7-3.5l7.3-11c.8-1.2,2.3-1.5,3.5-.7,1.2.8,1.5,2.3.7,3.5l-7.3,11c-.5.7-1.3,1.1-2.1,1.1Z"/>
-      <path d="M768.9,976.1c-.5,0-1-.1-1.4-.4-1.2-.8-1.5-2.3-.7-3.5l7.3-11c.8-1.2,2.3-1.5,3.5-.7,1.2.8,1.5,2.3.7,3.5l-7.3,11c-.5.7-1.3,1.1-2.1,1.1Z"/>
-      <path d="M783.5,976.1c-.5,0-1-.1-1.4-.4-1.2-.8-1.5-2.3-.7-3.5l7.3-11c.8-1.2,2.3-1.5,3.5-.7,1.2.8,1.5,2.3.7,3.5l-7.3,11c-.5.7-1.3,1.1-2.1,1.1Z"/>
-    </g>
-  </g></svg>`,
-  wind: `<svg width="28" height="28" viewBox="993.8 876.8 136.4 109.4" fill="currentColor"><g>
-    <path d="M1061.7,917.4h-34.4c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h34.4c4.6,0,8.4-3.8,8.4-8.4s-3.8-8.4-8.4-8.4-4.7,1.1-6.3,2.9c-.9,1-2.5,1.2-3.5.2-1-.9-1.2-2.5-.2-3.5,2.5-2.9,6.2-4.6,10.1-4.6,7.4,0,13.4,6,13.4,13.4s-6,13.4-13.4,13.4Z"/>
-    <path d="M1099.1,931.4h-89.6c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h89.6c6.6,0,11.9-5.4,11.9-11.9s-5.4-11.9-11.9-11.9-7.1,1.6-9.3,4.5c-.9,1.1-2.4,1.3-3.5.4-1.1-.9-1.3-2.4-.4-3.5,3.2-4.1,8.1-6.4,13.3-6.4,9.3,0,16.9,7.6,16.9,16.9s-7.6,16.9-16.9,16.9Z"/>
-    <path d="M1088.6,972.2c-4.7,0-9.1-2-12.2-5.6-.9-1.1-.8-2.6.3-3.5,1.1-.9,2.6-.8,3.5.3,2.1,2.4,5.1,3.8,8.4,3.8,6.1,0,11-4.9,11-11s-4.9-11-11-11h-45.6c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h45.6c8.8,0,16,7.2,16,16s-7.2,16-16,16Z"/>
-    <path d="M1032.2,945.2h-10.9c-1.4,0-2.5-1.1-2.5-2.5s1.1-2.5,2.5-2.5h10.9c1.4,0,2.5,1.1,2.5,2.5s-1.1,2.5-2.5,2.5Z"/>
-  </g></svg>`
+  sun: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" /><path d="M6.343 17.657l-1.414 1.414" /><path d="M6.343 6.343l-1.414 -1.414" /><path d="M17.657 6.343l1.414 -1.414" /><path d="M17.657 17.657l1.414 1.414" /><path d="M4 12h-2" /><path d="M12 4v-2" /><path d="M20 12h2" /><path d="M12 20v2" /></svg>`,
+  moon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454l0 .008" /></svg>`,
+  cloudsun: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878" /><g transform="translate(10,-6) scale(0.5)"><path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" /><path d="M6.343 6.343l-1.414 -1.414" /><path d="M17.657 6.343l1.414 -1.414" /><path d="M12 4v-2" /><path d="M4 12h-2" /><path d="M20 12h2" /></g></svg>`,
+  cloudmoon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878" /><g transform="translate(10,-6) scale(0.5)"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454l0 .008" /></g></svg>`,
+  cloud: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878" /></svg>`,
+  fog: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-12" /><path d="M5 20l14 0" /></svg>`,
+  drizzle: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7" /><path d="M11 13v2m0 3v2m4 -5v2m0 3v2" /></svg>`,
+  rain: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7" /><path d="M11 13v2m0 3v2m4 -5v2m0 3v2" /></svg>`,
+  snow: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7" /><path d="M11 15v.01m0 3v.01m0 3v.01m4 -4v.01m0 3v.01" /></svg>`,
+  storm: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1" /><polyline points="13 14 11 18 14 18 12 22" /></svg>`,
+  stormrain: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1" /><polyline points="13 14 11 18 14 18 12 22" /><path d="M8 15v2m4.5 -2v2" /></svg>`,
+  wind: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h8.5a2.5 2.5 0 1 0 -2.34 -3.24" /><path d="M3 12h15.5a2.5 2.5 0 1 1 -2.34 3.24" /><path d="M4 16h5.5a2.5 2.5 0 1 1 -2.34 3.24" /></svg>`
 };
 
 const CLOTHES = {

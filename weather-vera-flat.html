@@ -147,6 +147,10 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
 .api-key-screen p { font-size:13px; color:rgba(26,26,46,0.45); text-align:center; line-height:1.6; max-width:280px; }
 .api-key-input { width:100%; max-width:340px; padding:14px 18px; border:1px solid rgba(26,26,46,0.15); border-radius:14px; font-family:'Inter',sans-serif; font-size:13px; background:rgba(255,255,255,0.7); color:rgba(26,26,46,0.8); outline:none; text-align:center; }
 .api-key-input:focus { border-color:rgba(26,26,46,0.3); }
+.api-key-field-wrap { position:relative; width:100%; max-width:340px; }
+.api-key-field-wrap .api-key-input { max-width:none; padding-right:44px; text-align:left; }
+.api-key-eye-btn { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; font-size:16px; opacity:0.5; cursor:pointer; padding:4px; line-height:1; }
+.api-key-copy-link { font-size:12px; color:rgba(26,26,46,0.45); cursor:pointer; text-decoration:underline; margin-top:-8px; }
 .api-key-btn { padding:14px 32px; background:rgba(26,26,46,0.85); color:white; border:none; border-radius:14px; font-family:'Inter',sans-serif; font-size:14px; font-weight:500; cursor:pointer; }
 .api-key-skip { font-size:12px; color:rgba(26,26,46,0.35); cursor:pointer; text-decoration:underline; }
 .settings-textarea { width:100%; max-width:340px; padding:14px 18px; border:1px solid rgba(26,26,46,0.15); border-radius:14px; font-family:'Inter',sans-serif; font-size:13px; background:rgba(255,255,255,0.7); color:rgba(26,26,46,0.8); outline:none; resize:none; min-height:20px; line-height:1.5; }
@@ -269,7 +273,11 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
   <p>Para que el resumen te hable a ti, por tu nombre, con consejos según dónde estés. Todo se guarda solo en tu dispositivo.</p>
   <input class="api-key-input" id="settings-name-input" type="text" placeholder="Tu nombre" autocomplete="off">
   <textarea class="settings-textarea" id="settings-context-input" placeholder="Contexto (opcional, una línea). Ej: teletrabajo desde casa" rows="1"></textarea>
-  <input class="api-key-input" id="api-key-input" type="password" placeholder="API key de Anthropic (sk-ant-...)">
+  <div class="api-key-field-wrap">
+    <input class="api-key-input" id="api-key-input" type="password" placeholder="API key de Anthropic (sk-ant-...)">
+    <button type="button" class="api-key-eye-btn" id="api-key-eye-btn" onclick="toggleApiKeyVisibility()" aria-label="Mostrar clave">👁</button>
+  </div>
+  <span class="api-key-copy-link" id="api-key-copy-link" onclick="copyApiKeyToClipboard()">Copiar clave</span>
   <button class="api-key-btn" id="settings-save-btn" onclick="saveSettings()">Guardar y continuar</button>
   <span class="api-key-skip" id="settings-skip-link" onclick="skipApiKey()">Continuar sin IA</span>
 </div>
@@ -1344,6 +1352,36 @@ function renderWeather(data, city) {
 // API KEY
 // ═══════════════════════════════════════════
 let settingsIsFirstRun = true;
+
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('api-key-input');
+  const btn = document.getElementById('api-key-eye-btn');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
+async function copyApiKeyToClipboard() {
+  const input = document.getElementById('api-key-input');
+  const link = document.getElementById('api-key-copy-link');
+  if (!input.value) { link.textContent = 'No hay clave que copiar'; setTimeout(()=>link.textContent='Copiar clave', 1500); return; }
+  try {
+    await navigator.clipboard.writeText(input.value);
+    link.textContent = 'Copiada ✓';
+  } catch (e) {
+    // fallback para navegadores sin permiso de Clipboard API
+    input.type = 'text';
+    input.focus();
+    input.select();
+    document.execCommand('copy');
+    link.textContent = 'Copiada ✓';
+  }
+  setTimeout(()=>{ link.textContent = 'Copiar clave'; }, 1500);
+}
 
 function saveSettings() {
   const k = document.getElementById('api-key-input').value.trim();

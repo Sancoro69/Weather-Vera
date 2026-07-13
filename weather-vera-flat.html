@@ -54,6 +54,8 @@ body.is-night #stars-canvas { opacity:1; }
 /* HERO */
 .hero { display:flex; flex-direction:column; align-items:center; text-align:center; padding:32px 0 26px; }
 .hero-city { font-size:20px; font-weight:700; letter-spacing:0.06em; color:var(--text-primary); margin-bottom:2px; }
+.hero-icon-big { width:80px; height:80px; margin:6px 0 2px; color:var(--text-primary); }
+.hero-icon-big svg { width:100%; height:100%; }
 .temp-row { display:flex; align-items:flex-start; line-height:1; }
 .temp-value { font-size:clamp(100px,27vw,124px); font-weight:200 !important; letter-spacing:-0.04em; color:var(--text-primary); line-height:0.88; }
 .temp-unit { font-size:clamp(34px,9vw,46px); font-weight:200; color:var(--text-primary); margin-top:12px; margin-left:3px; opacity:0.7; }
@@ -313,12 +315,12 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
       <div class="hero-page">
         <div class="hero">
           <div class="hero-city" id="hero-city">—</div>
+          <div class="hero-icon-big" id="hero-icon-big"></div>
           <div class="temp-row">
             <span class="temp-value" id="temp-value">—</span>
             <span class="temp-unit">°C</span>
           </div>
           <div class="condition-row">
-            <span id="condition-icon-svg"></span>
             <span class="condition-text" id="condition-text">—</span>
           </div>
           <div class="feels-row">Sensación <span id="feels-like">—</span>°C</div>
@@ -1199,7 +1201,7 @@ async function fetchAISummary(data, city) {
   const userContext = localStorage.getItem('user_context') || '';
 
   const prompt=`Eres un meteorólogo español que escribe el resumen diario de una app del tiempo personal, hecha a medida para una sola persona. Responde SOLO en JSON válido, sin texto extra ni markdown. Formato exacto:
-{"resumen":"4-5 frases. Dirígete directamente a ${userName || 'el usuario'} por su nombre. Incluye de forma explícita: temperatura actual, sensación térmica, máxima prevista, condición del cielo (despejado/nuboso/etc.), y viento con su cifra exacta y dirección. Cierra con una recomendación práctica ligada a la combinación real de lugar, condiciones y contexto de fondo (si existe) — solo si aporta algo específico, no genérica. Tono directo y cercano, como un parte meteorológico completo pero personal, no telegráfico."}
+{"resumen":"MÁXIMO 60 palabras en total, sin excepción — cuenta las palabras antes de responder. 4-5 frases CORTAS y factuales, nunca largas ni encadenadas con conectores literarios (nada de 'así que', 'lo que hace que', 'el aire no te ofrece'). Dirígete directamente a ${userName || 'el usuario'} por su nombre. Incluye de forma explícita y directa: temperatura actual, sensación térmica, máxima prevista, condición del cielo, y viento con su cifra exacta y dirección — como datos enunciados, no explicados o adornados. Cierra con una recomendación práctica breve SOLO si aporta algo específico. Cero lenguaje poético, cero metáforas, cero frases de cierre evocadoras."}
 
 UBICACIÓN ACTUAL (dato de GPS en tiempo real, es la única verdad sobre dónde está ahora mismo): ${city}.
 ${userContext ? `CONTEXTO DE FONDO sobre ${userName || 'la persona'} (información general de su vida, rutinas o lugares donde suele estar en otras épocas — NO asumas que es donde está ahora mismo, solo úsalo si es coherente con la ubicación actual de arriba): ${userContext}.` : ''}
@@ -1269,7 +1271,7 @@ function renderWeather(data, city) {
   document.getElementById('hero-city').textContent = city.toUpperCase();
   document.getElementById('last-updated').textContent='Ahora';
   document.getElementById('temp-value').textContent=Math.round(c.temperature_2m);
-  document.getElementById('condition-icon-svg').innerHTML=wmoIcon(c.weather_code,!isNight).replace('width="28"','width="32"').replace('height="28"','height="32"');
+  document.getElementById('hero-icon-big').innerHTML=wmoIcon(c.weather_code,!isNight);
   document.getElementById('condition-text').textContent=wmoText(c.weather_code);
   document.getElementById('feels-like').textContent=Math.round(c.apparent_temperature);
   document.getElementById('temp-max').textContent=Math.round(daily.temperature_2m_max[0]);

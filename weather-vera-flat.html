@@ -42,10 +42,14 @@ body.is-night #stars-canvas { opacity:1; }
 }
 
 /* HEADER */
-.header { display:flex; justify-content:space-between; align-items:center; padding:8px 0 0; margin-bottom:4px; }
+.header { display:flex; justify-content:space-between; align-items:center; padding:8px 0 0; margin-bottom:4px; position:sticky; top:0; z-index:20; background:transparent; -webkit-backdrop-filter:none; backdrop-filter:none; transition:background 0.25s, backdrop-filter 0.25s; margin-left:-24px; margin-right:-24px; padding-left:24px; padding-right:24px; }
+.header.scrolled { background:rgba(255,255,255,0.78); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); padding-top:12px; padding-bottom:8px; }
+body.is-night .header.scrolled { background:rgba(18,18,26,0.78); }
 .location { display:flex; align-items:center; gap:6px; }
 .loc-icon { width:13px; height:13px; opacity:0.4; }
 .location-name { font-size:12px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-secondary); }
+.header-temp { font-size:13px; font-weight:600; color:var(--text-primary); opacity:0; transform:translateY(-4px); transition:opacity 0.25s, transform 0.25s; }
+.header.scrolled .header-temp { opacity:1; transform:translateY(0); }
 .last-updated { font-size:11px; color:var(--text-tertiary); }
 .header-right { display:flex; align-items:center; gap:12px; }
 .settings-gear { width:16px; height:16px; opacity:0.4; cursor:pointer; background:none; border:none; padding:0; color:var(--text-secondary); }
@@ -305,6 +309,7 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
       </svg>
       <span class="location-name" id="location-name">—</span>
+      <span class="header-temp" id="header-temp">—°</span>
     </div>
     <div class="header-right">
       <span class="last-updated" id="last-updated"></span>
@@ -1213,6 +1218,7 @@ function renderWeather(data, city) {
   document.getElementById('hero-city').textContent = city.toUpperCase();
   document.getElementById('last-updated').textContent='Ahora';
   document.getElementById('temp-value').textContent=Math.round(c.temperature_2m);
+  document.getElementById('header-temp').textContent=Math.round(c.temperature_2m)+'°';
   document.getElementById('hero-icon-big').innerHTML=wmoIcon(c.weather_code,!isNight);
   document.getElementById('condition-text').textContent=wmoText(c.weather_code);
   document.getElementById('feels-like').textContent=Math.round(c.apparent_temperature);
@@ -1430,6 +1436,17 @@ if (!localStorage.getItem('api_key_asked')) {
     indicator.style.opacity = '0';
     indicator.querySelector('svg').style.transform = '';
   }
+
+  const headerEl = document.querySelector('.header');
+  const tempRowEl = document.querySelector('.temp-row');
+  function updateHeaderScroll() {
+    if (!tempRowEl) return;
+    const headerHeight = headerEl.offsetHeight;
+    const tempBottom = tempRowEl.getBoundingClientRect().bottom;
+    headerEl.classList.toggle('scrolled', tempBottom <= headerHeight);
+  }
+  window.addEventListener('scroll', updateHeaderScroll, { passive: true });
+  updateHeaderScroll();
 
   document.addEventListener('touchstart', function(e) {
     // Solo activar si estamos al top de la página

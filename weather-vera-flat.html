@@ -42,7 +42,7 @@ body.is-night #stars-canvas { opacity:1; }
 }
 
 /* HEADER */
-.header { display:flex; justify-content:space-between; align-items:center; padding:8px 0 0; margin-bottom:4px; position:sticky; top:0; z-index:20; background:transparent; -webkit-backdrop-filter:none; backdrop-filter:none; transition:background 0.25s, backdrop-filter 0.25s; margin-left:-24px; margin-right:-24px; padding-left:24px; padding-right:24px; }
+.header { display:flex; justify-content:space-between; align-items:center; padding:8px 0 0; margin-bottom:4px; position:sticky; top:env(safe-area-inset-top,44px); z-index:20; background:transparent; -webkit-backdrop-filter:none; backdrop-filter:none; transition:background 0.25s, backdrop-filter 0.25s; margin-left:-24px; margin-right:-24px; padding-left:24px; padding-right:24px; }
 .header.scrolled { background:rgba(255,255,255,0.78); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); padding-top:12px; padding-bottom:8px; }
 body.is-night .header.scrolled { background:rgba(18,18,26,0.78); }
 .location { display:flex; align-items:center; gap:6px; }
@@ -1482,9 +1482,9 @@ if (!localStorage.getItem('api_key_asked')) {
   const tempRowEl = document.querySelector('.temp-row');
   function updateHeaderScroll() {
     if (!tempRowEl) return;
-    const headerHeight = headerEl.offsetHeight;
+    const headerBottom = headerEl.getBoundingClientRect().bottom;
     const tempBottom = tempRowEl.getBoundingClientRect().bottom;
-    headerEl.classList.toggle('scrolled', tempBottom <= headerHeight);
+    headerEl.classList.toggle('scrolled', tempBottom <= headerBottom);
   }
   window.addEventListener('scroll', updateHeaderScroll, { passive: true });
   updateHeaderScroll();

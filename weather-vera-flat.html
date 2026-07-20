@@ -78,7 +78,7 @@ body.is-night .card { border-top-color:rgba(255,255,255,0.1); }
 .hum-precip-card.no-top-border { border-top:none; }
 .sun-times-divider { position:relative; height:1px; background:rgba(0,0,0,0.08); margin:0 0 12px; }
 body.is-night .sun-times-divider { background:rgba(255,255,255,0.1); }
-.sun-time { position:absolute; top:50%; transform:translateY(-50%); display:flex; align-items:center; gap:4px; font-size:11px; font-weight:500; color:var(--text-tertiary); }
+.sun-time { position:absolute; bottom:100%; margin-bottom:3px; display:flex; align-items:center; gap:4px; font-size:11px; font-weight:500; color:var(--text-tertiary); }
 .sun-time svg { width:15px; height:15px; flex-shrink:0; }
 .sun-time-rise { left:0; }
 .sun-time-set { right:0; flex-direction:row-reverse; }
@@ -115,6 +115,18 @@ body.is-night .hum-precip-divider { background:rgba(255,255,255,0.12); }
 .wind-col { flex:1; display:flex; align-items:center; justify-content:center; }
 .wind-col-divider { width:0.5px; background:rgba(0,0,0,0.1); align-self:stretch; margin:4px 0; }
 body.is-night .wind-col-divider { background:rgba(255,255,255,0.12); }
+.wind-carousel { position:relative; overflow:hidden; touch-action:pan-y; }
+.wind-pages { display:flex; transition:transform 0.38s cubic-bezier(0.4,0,0.2,1); will-change:transform; }
+.wind-page { min-width:100%; flex-shrink:0; }
+.wind-hourly-scroll { display:flex; overflow-x:auto; gap:4px; padding:4px 0 2px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.wind-hourly-scroll::-webkit-scrollbar { display:none; }
+.wind-hour-item { display:flex; flex-direction:column; align-items:center; gap:9px; min-width:14.28%; padding:12px 4px; flex-shrink:0; }
+.wind-hour-time { font-size:12px; color:var(--text-secondary); }
+.wind-hour-arrow { width:16px; height:16px; }
+.wind-hour-speed { font-size:14px; font-weight:500; color:var(--text-primary); }
+.wind-hour-unit { font-size:9px; color:var(--text-tertiary); margin-top:-6px; }
+.wind-hour-wave { font-size:10px; color:var(--text-tertiary); opacity:0.7; display:flex; align-items:center; gap:2px; }
+.wind-hour-wave svg { width:11px; height:11px; flex-shrink:0; }
 .wind-top { display:flex; flex-direction:column; align-items:center; gap:4px; }
 .wind-direction-label { font-size:13px; font-weight:500; letter-spacing:0.05em; color:var(--text-secondary); min-height:18px; }
 .wind-speed-big { font-size:44px; font-weight:400; letter-spacing:-0.03em; line-height:1; color:var(--text-primary); }
@@ -269,7 +281,8 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
 .hero-hour-time { font-size: 11px; color: var(--text-tertiary); font-weight: 500; }
 .hero-hour-temp { font-size: 17px; font-weight: 400; color: var(--text-primary); }
 .hero-hour-feel { font-size: 10px; color: var(--text-tertiary); }
-.hero-hour-rain { font-size: 10px; color: var(--text-tertiary); opacity: 0.7; }
+.hero-hour-rain { font-size: 10px; color: var(--text-tertiary); opacity: 0.7; display:flex; align-items:center; gap:2px; }
+.hero-hour-rain svg { width: 9px; height: 9px; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -389,49 +402,62 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
   <!-- VIENTO -->
   <div class="card">
     <div class="card-label">Viento</div>
-    <div class="wind-center">
-      <div class="wind-columns">
-        <div class="wind-col">
-          <div class="compass-wrap">
-            <svg viewBox="0 0 90 90" id="compass-svg">
-              <circle cx="45" cy="45" r="41" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.16"/>
-              <!-- marcas de grados cada 30° -->
-              <g opacity="0.15" stroke="currentColor" stroke-width="0.8">
-                <line x1="45" y1="5" x2="45" y2="11"/>
-                <line x1="45" y1="79" x2="45" y2="85"/>
-                <line x1="5" y1="45" x2="11" y2="45"/>
-                <line x1="79" y1="45" x2="85" y2="45"/>
-                <line x1="16.5" y1="16.5" x2="20.7" y2="20.7"/>
-                <line x1="69.3" y1="69.3" x2="73.5" y2="73.5"/>
-                <line x1="73.5" y1="16.5" x2="69.3" y2="20.7"/>
-                <line x1="20.7" y1="69.3" x2="16.5" y2="73.5"/>
-              </g>
-              <text x="45" y="13" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">N</text>
-              <text x="45" y="83" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">S</text>
-              <text x="8"  y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">O</text>
-              <text x="82" y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">E</text>
-              <!-- aguja animada -->
-              <g id="compass-needle" transform="rotate(0 45 45)">
-                <!-- norte: punta oscura -->
-                <polygon points="45,18 48,45 45,52 42,45" fill="currentColor" opacity="0.88"/>
-                <!-- sur: cola clara -->
-                <polygon points="45,72 48,45 45,52 42,45" fill="currentColor" opacity="0.18"/>
-                <!-- punto central -->
-                <circle cx="45" cy="45" r="2.5" fill="currentColor" opacity="0.3"/>
-              </g>
-            </svg>
+    <div class="wind-carousel" id="wind-carousel">
+      <div class="wind-pages" id="wind-pages">
+        <div class="wind-page">
+          <div class="wind-center">
+            <div class="wind-columns">
+              <div class="wind-col">
+                <div class="compass-wrap">
+                  <svg viewBox="0 0 90 90" id="compass-svg">
+                    <circle cx="45" cy="45" r="41" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.16"/>
+                    <!-- marcas de grados cada 30° -->
+                    <g opacity="0.15" stroke="currentColor" stroke-width="0.8">
+                      <line x1="45" y1="5" x2="45" y2="11"/>
+                      <line x1="45" y1="79" x2="45" y2="85"/>
+                      <line x1="5" y1="45" x2="11" y2="45"/>
+                      <line x1="79" y1="45" x2="85" y2="45"/>
+                      <line x1="16.5" y1="16.5" x2="20.7" y2="20.7"/>
+                      <line x1="69.3" y1="69.3" x2="73.5" y2="73.5"/>
+                      <line x1="73.5" y1="16.5" x2="69.3" y2="20.7"/>
+                      <line x1="20.7" y1="69.3" x2="16.5" y2="73.5"/>
+                    </g>
+                    <text x="45" y="13" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">N</text>
+                    <text x="45" y="83" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">S</text>
+                    <text x="8"  y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">O</text>
+                    <text x="82" y="48" text-anchor="middle" font-size="7.5" font-family="Inter" fill="currentColor" opacity="0.38" font-weight="500">E</text>
+                    <!-- aguja animada -->
+                    <g id="compass-needle" transform="rotate(0 45 45)">
+                      <!-- norte: punta oscura -->
+                      <polygon points="45,18 48,45 45,52 42,45" fill="currentColor" opacity="0.88"/>
+                      <!-- sur: cola clara -->
+                      <polygon points="45,72 48,45 45,52 42,45" fill="currentColor" opacity="0.18"/>
+                      <!-- punto central -->
+                      <circle cx="45" cy="45" r="2.5" fill="currentColor" opacity="0.3"/>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+              <div class="wind-col-divider"></div>
+              <div class="wind-col">
+                <div class="wind-top">
+                  <div class="wind-direction-label" id="wind-dir-label">—</div>
+                  <div class="wind-speed-big" id="wind-speed">—</div>
+                  <div class="wind-unit">km/h</div>
+                </div>
+              </div>
+            </div>
+            <div class="wind-effect-text" id="wind-effect">—</div>
           </div>
         </div>
-        <div class="wind-col-divider"></div>
-        <div class="wind-col">
-          <div class="wind-top">
-            <div class="wind-direction-label" id="wind-dir-label">—</div>
-            <div class="wind-speed-big" id="wind-speed">—</div>
-            <div class="wind-unit">km/h</div>
-          </div>
+        <div class="wind-page">
+          <div class="wind-hourly-scroll" id="wind-hourly-scroll"></div>
         </div>
       </div>
-      <div class="wind-effect-text" id="wind-effect">—</div>
+    </div>
+    <div class="hero-dots">
+      <div class="hero-dot active" id="wdot-0"></div>
+      <div class="hero-dot" id="wdot-1"></div>
     </div>
   </div>
 
@@ -1115,6 +1141,14 @@ async function fetchWeather(lat,lon) {
   return (await fetch(url)).json();
 }
 
+async function fetchMarine(lat,lon) {
+  try {
+    const url=`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height&timezone=auto&forecast_days=2`;
+    const json = await (await fetch(url)).json();
+    return json?.hourly?.wave_height ? json : null;
+  } catch { return null; }
+}
+
 // ═══════════════════════════════════════════
 // ROPA SEGÚN TEMPERATURA APARENTE
 // ═══════════════════════════════════════════
@@ -1147,12 +1181,17 @@ async function fetchAISummary(data, city) {
   const userName = localStorage.getItem('user_name') || '';
   const userContext = localStorage.getItem('user_context') || '';
 
+  const isVera = /vera/i.test(city);
+  const veraWindNote = isVera && (windDir==='Levante' || windDir==='Poniente')
+    ? `\nDATO LOCAL DE VERA (Almería) — solo aplica aquí, no lo generalices a otros sitios: el viento de Levante (este) trae aire más cálido y húmedo, y suele levantar oleaje, mar picada o con corriente. El viento de Poniente (oeste) llega del interior, más seco y fresco, con el mar en calma. El viento actual es de ${windDir}: menciónalo brevemente si es relevante para ir a la playa o comer en terraza hoy.`
+    : '';
+
   const prompt=`Eres un meteorólogo español que escribe el resumen diario de una app del tiempo personal, hecha a medida para una sola persona. Responde SOLO en JSON válido, sin texto extra ni markdown. Formato exacto:
 {"resumen":"MÁXIMO 60 palabras en total, sin excepción — cuenta las palabras antes de responder. 4-5 frases CORTAS y factuales, nunca largas ni encadenadas con conectores literarios (nada de 'así que', 'lo que hace que', 'el aire no te ofrece'). Dirígete directamente a ${userName || 'el usuario'} por su nombre. Incluye de forma explícita y directa: temperatura actual, sensación térmica, máxima prevista, condición del cielo, y viento con su cifra exacta y dirección — como datos enunciados, no explicados o adornados. Cierra con una recomendación práctica breve SOLO si aporta algo específico. Cero lenguaje poético, cero metáforas, cero frases de cierre evocadoras."}
 
 UBICACIÓN ACTUAL (dato de GPS en tiempo real, es la única verdad sobre dónde está ahora mismo): ${city}.
 ${userContext ? `CONTEXTO DE FONDO sobre ${userName || 'la persona'} (información general de su vida, rutinas o lugares donde suele estar en otras épocas — NO asumas que es donde está ahora mismo, solo úsalo si es coherente con la ubicación actual de arriba): ${userContext}.` : ''}
-Datos meteorológicos: ${Math.round(c.temperature_2m)}°C actual, sensación ${Math.round(c.apparent_temperature)}°C, ${wmoText(c.weather_code)}, viento de ${windDir} a ${windNow}km/h${windDir==='Levante'||windDir==='Poniente' ? ' (usa esta terminología solo si el lugar es costa almeriense; si no, ignórala)' : ''}, máx ${Math.round(d.temperature_2m_max[0])}°/mín ${Math.round(d.temperature_2m_min[0])}° hoy.
+Datos meteorológicos: ${Math.round(c.temperature_2m)}°C actual, sensación ${Math.round(c.apparent_temperature)}°C, ${wmoText(c.weather_code)}, viento de ${windDir} a ${windNow}km/h${windDir==='Levante'||windDir==='Poniente' ? ' (usa esta terminología solo si el lugar es costa almeriense; si no, ignórala)' : ''}, máx ${Math.round(d.temperature_2m_max[0])}°/mín ${Math.round(d.temperature_2m_min[0])}° hoy.${veraWindNote}
 Usa tu conocimiento general del lugar (¿es costa, interior, ciudad grande?) para que la recomendación tenga sentido ahí, no una genérica.`;
 
   try {
@@ -1299,6 +1338,7 @@ function renderWeather(data, city) {
   document.getElementById('clothes-block').style.display='flex';
 
   renderHeroHourly(hourly, nowHour, isNight);
+  renderWindHourly(hourly, nowHour, window.lastMarineData);
   fetchAISummary(data, city);
   document.getElementById('loading').classList.add('hidden');
   document.getElementById('app').style.display='flex';
@@ -1399,7 +1439,8 @@ async function init() {
     const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:10000}));
     const {latitude:lat,longitude:lon}=pos.coords;
     document.getElementById('loading-city').textContent='Cargando datos…';
-    const [city,weather]=await Promise.all([reverseGeocode(lat,lon),fetchWeather(lat,lon)]);
+    const [city,weather,marine]=await Promise.all([reverseGeocode(lat,lon),fetchWeather(lat,lon),fetchMarine(lat,lon)]);
+    window.lastMarineData = marine;
     renderWeather(weather,city);
   } catch(err) {
     document.getElementById('loading').classList.add('hidden');
@@ -1498,10 +1539,10 @@ if (!localStorage.getItem('api_key_asked')) {
 })();
 
 
-// ── HERO CARRUSEL (swipe) ──
-(function() {
-  const pages = document.getElementById('hero-pages');
-  const dots = [document.getElementById('dot-0'), document.getElementById('dot-1')];
+// ── CARRUSEL SWIPE (reutilizable) ──
+function initSwipeCarousel(pagesId, dotIds) {
+  const pages = document.getElementById(pagesId);
+  const dots = dotIds.map(id => document.getElementById(id));
   let current = 0;
   let startX = 0;
   let startY = 0;
@@ -1531,7 +1572,6 @@ if (!localStorage.getItem('api_key_asked')) {
     }
     if (!isHorizontal) return;
     const base = -current * 100;
-    const pct = (dx / window.innerWidth) * 100;
     pages.style.transform = `translateX(calc(${base}% + ${dx}px))`;
   }, { passive: true });
 
@@ -1544,7 +1584,9 @@ if (!localStorage.getItem('api_key_asked')) {
     else if (dx > 50 && current === 1) goTo(0);
     else goTo(current);
   }, { passive: true });
-})();
+}
+initSwipeCarousel('hero-pages', ['dot-0','dot-1']);
+initSwipeCarousel('wind-pages', ['wdot-0','wdot-1']);
 
 // ── RENDER HERO HOURLY ──
 function renderHeroHourly(hourly, nowHour, isNight) {
@@ -1565,7 +1607,35 @@ function renderHeroHourly(hourly, nowHour, isNight) {
       ${iconH}
       <div class="hero-hour-temp">${Math.round(hourly.temperature_2m[idx])}°</div>
       <div class="hero-hour-feel">${Math.round(hourly.apparent_temperature[idx])}°</div>
-      <div class="hero-hour-rain">${Math.round(hourly.precipitation_probability?.[idx] ?? 0)}%</div>`;
+      <div class="hero-hour-rain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3.5 4 6 7.2 6 10a6 6 0 0 1 -12 0c0 -2.8 2.5 -6 6 -10z"/></svg>${Math.round(hourly.precipitation_probability?.[idx] ?? 0)}%</div>`;
+    el.appendChild(div);
+  }
+}
+
+function renderWindHourly(hourly, nowHour, marine) {
+  const el = document.getElementById('wind-hourly-scroll');
+  if (!el) return;
+  el.innerHTML = '';
+  for (let i = 0; i < 7; i++) {
+    const idx = nowHour + i;
+    if (idx >= hourly.wind_speed_10m.length) break;
+    const h = idx % 24;
+    const dir = hourly.wind_direction_10m[idx];
+    const speed = Math.round(hourly.wind_speed_10m[idx]);
+    const wave = marine?.hourly?.wave_height?.[idx];
+    const waveRow = (wave !== undefined && wave !== null)
+      ? `<div class="wind-hour-wave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15c2 -2 4 -2 6 0s4 2 6 0 4 -2 6 0"/><path d="M3 19c2 -2 4 -2 6 0s4 2 6 0 4 -2 6 0"/></svg>${wave.toFixed(1)} m</div>`
+      : '';
+    const div = document.createElement('div');
+    div.className = 'wind-hour-item' + (i === 0 ? ' current' : '');
+    div.innerHTML = `
+      <div class="wind-hour-time">${i === 0 ? 'Ahora' : h + 'h'}</div>
+      <svg class="wind-hour-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(${dir}deg)">
+        <path d="M12 3v18"/><path d="M12 3l5 5"/><path d="M12 3l-5 5"/>
+      </svg>
+      <div class="wind-hour-speed">${speed}</div>
+      <div class="wind-hour-unit">km/h</div>
+      ${waveRow}`;
     el.appendChild(div);
   }
 }

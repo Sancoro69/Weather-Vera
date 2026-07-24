@@ -1137,7 +1137,6 @@ async function fetchWeather(lat,lon) {
     +`&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day,relative_humidity_2m`
     +`&hourly=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation_probability`
     +`&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_direction_10m_dominant,sunrise,sunset`
-    +`&models=icon_eu`
     +`&timezone=auto&forecast_days=7`;
   return (await fetch(url)).json();
 }

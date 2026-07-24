@@ -88,6 +88,7 @@ body.is-night .sun-times-divider { background:rgba(255,255,255,0.1); }
 body.is-night .hum-precip-divider { background:rgba(255,255,255,0.12); }
 .hum-precip-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-primary); margin-bottom:8px; }
 .hum-precip-value { font-size:26px; font-weight:400; color:var(--text-primary); }
+.hum-precip-sublabel { font-size:11px; color:var(--text-tertiary); margin-top:2px; }
 
 /* RESUMEN IA + ROPA */
 .ai-block { display:flex; flex-direction:column; gap:14px; }
@@ -375,17 +376,18 @@ body.is-night .daily-bar-track { background:rgba(255,255,255,0.12); }
     <span class="sun-time sun-time-set" id="sun-time-set"></span>
   </div>
 
-  <!-- HUMEDAD · PRECIPITACIÓN -->
+  <!-- PRECIPITACIÓN · ÍNDICE UV -->
   <div class="card hum-precip-card no-top-border">
     <div class="hum-precip-row">
       <div class="hum-precip-col">
-        <div class="hum-precip-label">Humedad</div>
-        <div class="hum-precip-value" id="humidity-value">—%</div>
+        <div class="hum-precip-label">Precipitación</div>
+        <div class="hum-precip-value" id="precip-value">—%</div>
       </div>
       <div class="hum-precip-divider"></div>
       <div class="hum-precip-col">
-        <div class="hum-precip-label">Precipitación</div>
-        <div class="hum-precip-value" id="precip-value">—%</div>
+        <div class="hum-precip-label">Índice UV</div>
+        <div class="hum-precip-value" id="uv-value">—</div>
+        <div class="hum-precip-sublabel" id="uv-category"></div>
       </div>
     </div>
   </div>
@@ -951,6 +953,15 @@ function wmoText(code) {
   return '—';
 }
 
+function uvCategory(uv) {
+  if (uv==null) return '';
+  if (uv < 3)  return 'Bajo';
+  if (uv < 6)  return 'Moderado';
+  if (uv < 8)  return 'Alto';
+  if (uv < 11) return 'Muy alto';
+  return 'Extremo';
+}
+
 // ═══════════════════════════════════════════
 // DIRECCIÓN VIENTO
 // ═══════════════════════════════════════════
@@ -1134,7 +1145,7 @@ async function reverseGeocode(lat,lon) {
 // ═══════════════════════════════════════════
 async function fetchWeather(lat,lon) {
   const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
-    +`&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day,relative_humidity_2m`
+    +`&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,is_day,relative_humidity_2m,uv_index`
     +`&hourly=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation_probability`
     +`&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,wind_direction_10m_dominant,sunrise,sunset`
     +`&timezone=auto&forecast_days=7`;
@@ -1270,9 +1281,11 @@ function renderWeather(data, city) {
 
   // Humedad · Precipitación
   const nowHourIdx=new Date().getHours();
-  document.getElementById('humidity-value').textContent = (c.relative_humidity_2m ?? '—') + '%';
   const precipNow = hourly.precipitation_probability?.[nowHourIdx];
   document.getElementById('precip-value').textContent = (precipNow ?? 0) + '%';
+  const uv = c.uv_index;
+  document.getElementById('uv-value').textContent = uv!=null ? Math.round(uv) : '—';
+  document.getElementById('uv-category').textContent = uvCategory(uv);
 
   // Viento
   const wDir=c.wind_direction_10m, wSpd=Math.round(c.wind_speed_10m);
